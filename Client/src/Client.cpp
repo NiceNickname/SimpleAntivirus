@@ -1,8 +1,10 @@
 #include "Client.h"
 #include <QString>
+#include <QThread>
 #include <IPC.h>
 #include <array>
-
+#include <iostream>
+#include <sstream>
 
 struct TestStruct
 {
@@ -15,21 +17,68 @@ Client::Client(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
+	connect(this, &Client::output, ui.textEdit, &QTextEdit::append);
 	connectToServer();
 }
 
 Client::~Client()
 {
+	ResetEvent(clientUp);
 	IPC::Disconnect(hServer);
 	IPC::Disconnect(hClient);
 }
 
 void Client::writeToServer()
 {
+	
+}
+
+void Client::on_testButton_clicked()
+{
+	QThread* thread = QThread::create(&Client::IPCtestRequest, this);
+	thread->start();
+}
+
+void Client::connectToServer()
+{
+	hClient = IPC::CreateSlot(u"\\\\.\\mailslot\\client");
+	hServer = IPC::ConnectToSlot(u"\\\\.\\mailslot\\server");
+
+	if (IPC::IsInvalid(hServer))
+	{
+		wakeUpServer();
+
+		while (true)
+		{
+			hServer = IPC::ConnectToSlot(u"\\\\.\\mailslot\\server");
+
+			if (!IPC::IsInvalid(hServer))
+				break;
+
+			Sleep(10);
+		}
+	}
+	clientUp = OpenEvent(EVENT_ALL_ACCESS, NULL, TEXT("ClientUpEvent"));
+	SetEvent(clientUp);
+}
+
+void Client::readFromServer()
+{
+	
+}
+
+void Client::sendRequest()
+{
+	writeToServer();
+	readFromServer();
+}
+
+void Client::IPCtestRequest()
+{
 	// TEST DATA
 	uint32_t testNumber = 10;
 
-	std::string testString = "TestString";
+	std::u16string testString = u"TestString";
 
 	std::array <int16_t, 5> testArray = {
 		1, 2, -3, 4, 5
@@ -41,72 +90,48 @@ void Client::writeToServer()
 	// send to server
 	if (!IPC::IsInvalid(hServer))
 	{
+		QString report = "Sending to the server:\n";
+		report += QString::number(testNumber) + "\n";
+		report += QString::fromUtf16(testString.c_str()) + "\n";
+		for (auto el : testArray)
+			report += QString::number(el) + " ";
+		report += "\n";
+		report += testStruct.testStringFromStruct + QString("\n");
+		report += QString::number(testStruct.testNumberFromStruct) + "\n";
+
+		output(report);
+
+		IPC::WriteUInt8(hServer, (uint8_t)CMDCODE::TEST);
 		IPC::WriteUInt32(hServer, testNumber);
-		IPC::WriteString(hServer, testString);
+		IPC::WriteU16String(hServer, testString);
 		IPC::WriteArrayInt16(hServer, testArray.data(), testArray.size());
 		IPC::WriteStruct<TestStruct>(hServer, testStruct);
 	}
-}
 
-void Client::on_writeButton_clicked()
-{
-	std::thread thread(&Client::sendRequest, this);
-	thread.join();
-}
-
-void Client::connectToServer()
-{
-	hClient = IPC::CreateSlot("\\\\.\\mailslot\\client");
-	hServer = IPC::ConnectToSlot("\\\\.\\mailslot\\server");
-
-	if (IPC::IsInvalid(hServer))
-	{
-		wakeUpServer();
-
-		while (true)
-		{
-			hServer = IPC::ConnectToSlot("\\\\.\\mailslot\\server");
-
-			if (!IPC::IsInvalid(hServer))
-				break;
-
-			Sleep(10);
-		}
-	}
-}
-
-void Client::readFromServer()
-{
 	if (!IPC::IsInvalid(hClient))
 	{
 		// read echo from server
 		uint32_t testNumberResponse = IPC::ReadUInt32(hClient);
-		std::string testStringResponse = IPC::ReadString(hClient);
+		std::u16string testStringResponse = IPC::ReadU16String(hClient);
 		std::vector<int16_t> testVector = IPC::ReadArrayInt16(hClient);
 		TestStruct testStructResponse = IPC::ReadStruct<TestStruct>(hClient);
-
+		
 		// output
-		ui.uint32LineEdit->setText(QString::number(testNumberResponse));
-		ui.stringLineEdit->setText(testStringResponse.c_str());
-		ui.structStringLineEdit->setText(testStructResponse.testStringFromStruct);
-		ui.structInt16LineEdit->setText(QString::number(testStructResponse.testNumberFromStruct));
 
-		QString arrayResponse = "";
+		QString report = "Received from the server:\n";
+		report += QString::number(testNumberResponse) + "\n";
+		report += QString::fromUtf16(testStringResponse.c_str()) + "\n";
 		for (auto el : testVector)
-		{
-			arrayResponse += QString::number(el) + " ";
-		}
+			report += QString::number(el) + " ";
+		report += "\n";
+		report += testStructResponse.testStringFromStruct + QString("\n");
+		report += QString::number(testStructResponse.testNumberFromStruct) + "\n";
 
-		ui.A16IntLineEdit->setText(arrayResponse);
-
+		output(report);
 	}
 }
 
-void Client::sendRequest()
-{
-	writeToServer();
-	readFromServer();
-}
+
 
 void Client::wakeUpServer()
 {
@@ -115,9 +140,9 @@ void Client::wakeUpServer()
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
-
+	wchar_t path[256] = L"Server.exe";
 	if (!CreateProcess(NULL,
-		TEXT("Server.exe"),
+		path,
 		NULL,
 		NULL,
 		FALSE,
@@ -126,10 +151,13 @@ void Client::wakeUpServer()
 		NULL,
 		&si,
 		&pi)
-		)
+		)	
 	{
-		printf("CreateProcess failed (%d).\n", GetLastError());
+		HRESULT error = GetLastError();
 		return;
 	}
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }
 

@@ -19,12 +19,17 @@ private:
     void writeToServer();
     void readFromServer();
     void sendRequest();
+    void IPCtestRequest();
+
+signals:
+    void output(const QString& text);
 
 private slots:
-    void on_writeButton_clicked();
+    void on_testButton_clicked();
 
 private:
     Ui::ClientClass ui;
     HANDLE hClient;
     HANDLE hServer;
+    HANDLE clientUp;
 };

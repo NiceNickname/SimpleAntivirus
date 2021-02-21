@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>516</width>
-    <height>343</height>
+    <width>881</width>
+    <height>619</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,113 +17,24 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>211</width>
-      <height>61</height>
+      <x>10</x>
+      <y>0</y>
+      <width>861</width>
+      <height>541</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLabel" name="uint32Label">
-       <property name="text">
-        <string>uint32</string>
-       </property>
-      </widget>
+      <widget class="QTextEdit" name="textEdit"/>
      </item>
      <item>
-      <widget class="QLineEdit" name="uint32LineEdit"/>
+      <widget class="QPushButton" name="testButton">
+       <property name="text">
+        <string>TestRequest</string>
+       </property>
+      </widget>
      </item>
     </layout>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>30</y>
-      <width>211</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <widget class="QLabel" name="A16IntLabel">
-       <property name="text">
-        <string>ArrayInt16</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="A16IntLineEdit"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>107</y>
-      <width>211</width>
-      <height>103</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_4">
-     <item>
-      <widget class="QLabel" name="structStringLabel">
-       <property name="text">
-        <string>struct.testString</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="structStringLineEdit"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="structInt16Label">
-       <property name="text">
-        <string>struct.testInt16_t</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="structInt16LineEdit"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget_5">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>140</y>
-      <width>211</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_5">
-     <item>
-      <widget class="QLabel" name="stringLabel">
-       <property name="text">
-        <string>String</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="stringLineEdit"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QPushButton" name="writeButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>220</y>
-      <width>461</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Write</string>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -131,7 +42,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>516</width>
+     <width>881</width>
      <height>26</height>
     </rect>
    </property>
