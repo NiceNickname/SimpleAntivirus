@@ -1,5 +1,6 @@
 #pragma once
 #include <IPC.h>
+#include "Base.h"
 
 class Server
 {
@@ -17,4 +18,5 @@ private:
 	HANDLE hClient;
 	HANDLE hServer;
 	HANDLE clientUp;
+	Base base;
 };

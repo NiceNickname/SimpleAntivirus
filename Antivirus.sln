@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPCLib", "IPCLib\IPCLib.vcxproj", "{8941CB5C-3D10-430F-B42D-68EB8DB9827A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseEditor", "BaseEditor\BaseEditor.vcxproj", "{767B9CB4-44EE-4BCC-A3E8-6CCC01D04E42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -27,6 +29,10 @@ Global
 		{8941CB5C-3D10-430F-B42D-68EB8DB9827A}.Debug|x64.Build.0 = Debug|x64
 		{8941CB5C-3D10-430F-B42D-68EB8DB9827A}.Release|x64.ActiveCfg = Release|x64
 		{8941CB5C-3D10-430F-B42D-68EB8DB9827A}.Release|x64.Build.0 = Release|x64
+		{767B9CB4-44EE-4BCC-A3E8-6CCC01D04E42}.Debug|x64.ActiveCfg = Debug|x64
+		{767B9CB4-44EE-4BCC-A3E8-6CCC01D04E42}.Debug|x64.Build.0 = Debug|x64
+		{767B9CB4-44EE-4BCC-A3E8-6CCC01D04E42}.Release|x64.ActiveCfg = Release|x64
+		{767B9CB4-44EE-4BCC-A3E8-6CCC01D04E42}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

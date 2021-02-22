@@ -2,11 +2,12 @@
 #include <IPC.h>
 #include <thread>
 #include <iostream>
+#include "BaseLoader.h"
 
 Server::Server()
 {
 	clientUp = CreateEvent(NULL, TRUE, FALSE, TEXT("ClientUpEvent"));
-
+	base = std::move(BaseLoader::Load(u"Base.lsd"));
 	std::thread ipcThread(&Server::startReading, this);
 	ipcThread.join();
 }
@@ -65,6 +66,7 @@ void Server::processTestRequest()
 		char testStringFromStruct[256];
 		int16_t testNumberFromStruct;
 	} testStruct;
+
 
 	// getting test data from client
 	uint32_t testNumber = IPC::ReadUInt32(hServer);

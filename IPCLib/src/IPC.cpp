@@ -32,7 +32,8 @@ void IPC::Disconnect(HANDLE hSlot)
 bool IPC::HasNewData(HANDLE hSlot)
 {
 	DWORD cbMessage, cMessage;
-	GetMailslotInfo(hSlot, (LPDWORD)NULL, &cbMessage, &cMessage, (LPDWORD)NULL);
+	if (!GetMailslotInfo(hSlot, (LPDWORD)NULL, &cbMessage, &cMessage, (LPDWORD)NULL))
+		return true;
 	
 	return cbMessage != MAILSLOT_NO_MESSAGE;
 }
@@ -92,8 +93,9 @@ void IPC::WriteUInt64(HANDLE hSlot, uint64_t value)
 
 void IPC::WriteU16String(HANDLE hSlot, const std::u16string& value)
 {
+	WriteUInt32(hSlot, (uint32_t)value.size());
 	DWORD bytesWritten;
-	WriteFile(hSlot, (const void*)value.c_str(), sizeof(value), &bytesWritten, NULL);
+	WriteFile(hSlot, (const void*)value.c_str(), value.size() * sizeof(char16_t), &bytesWritten, NULL);
 }
 
 void IPC::WriteU16Char(HANDLE hSlot, char16_t value)
@@ -266,7 +268,9 @@ uint32_t IPC::ReadUInt32(HANDLE hSlot)
 
 	DWORD bytesRead;
 	uint32_t result;
-	ReadFile(hSlot, (void*)&result, sizeof(result), &bytesRead, NULL);
+	HRESULT error = GetLastError();
+	int a = ReadFile(hSlot, (void*)&result, sizeof(result), &bytesRead, NULL);
+	error = GetLastError();
 
 	return result;
 }
@@ -287,10 +291,12 @@ std::u16string IPC::ReadU16String(HANDLE hSlot)
 	WaitForData(hSlot);
 
 	DWORD bytesRead;
+	uint32_t size = ReadUInt32(hSlot);
 	char16_t result[1024];
-	ReadFile(hSlot, result, sizeof(result), &bytesRead, NULL);
-
-	return std::move(result);
+	ReadFile(hSlot, result, size * sizeof(char16_t), &bytesRead, NULL);
+	
+	result[size] = u'\0';
+	return std::move(std::u16string(result));
 }
 
 char16_t IPC::ReadU16Char(HANDLE hSlot)
