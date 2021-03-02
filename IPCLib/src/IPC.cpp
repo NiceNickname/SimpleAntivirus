@@ -104,6 +104,19 @@ void IPC::WriteU16Char(HANDLE hSlot, char16_t value)
 	WriteFile(hSlot, (const void*)&value, sizeof(value), &bytesWritten, NULL);
 }
 
+void IPC::WriteASCIIString(HANDLE hSlot, const std::string& value)
+{
+	WriteUInt32(hSlot, (uint32_t)value.size());
+	DWORD bytesWritten;
+	WriteFile(hSlot, (const void*)value.c_str(), value.size() * sizeof(char), &bytesWritten, NULL);
+}
+
+void IPC::WriteASCIIChar(HANDLE hSlot, char value)
+{
+	DWORD bytesWritten;
+	WriteFile(hSlot, (const void*)&value, sizeof(value), &bytesWritten, NULL);
+}
+
 void IPC::WriteFloat32(HANDLE hSlot, float value)
 {
 	DWORD bytesWritten;
@@ -305,6 +318,30 @@ char16_t IPC::ReadU16Char(HANDLE hSlot)
 
 	DWORD bytesRead;
 	char16_t result;
+	ReadFile(hSlot, (void*)&result, sizeof(result), &bytesRead, NULL);
+
+	return result;
+}
+
+std::string IPC::ReadASCIIString(HANDLE hSlot)
+{
+	WaitForData(hSlot);
+
+	DWORD bytesRead;
+	uint32_t size = ReadUInt32(hSlot);
+	char result[1024];
+	ReadFile(hSlot, result, size * sizeof(char), &bytesRead, NULL);
+
+	result[size] = '\0';
+	return std::move(std::string(result));
+}
+
+char IPC::ReadASCIIChar(HANDLE hSlot)
+{
+	WaitForData(hSlot);
+
+	DWORD bytesRead;
+	char result;
 	ReadFile(hSlot, (void*)&result, sizeof(result), &bytesRead, NULL);
 
 	return result;

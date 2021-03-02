@@ -17,6 +17,7 @@ private slots:
     void on_writeButton_clicked();
     void on_readButton_clicked();
     void on_testDataButton_clicked();
+    void cellChanged(int row, int column);
 
 private:
     Ui::BaseEditorClass ui;

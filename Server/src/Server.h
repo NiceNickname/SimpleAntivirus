@@ -1,6 +1,7 @@
 #pragma once
 #include <IPC.h>
 #include "Base.h"
+#include <memory>
 
 class Server
 {
@@ -13,10 +14,11 @@ private:
 	void processRequest();
 	void waitForClient();
 	void processTestRequest();
+	void testBase();
 
 private:
 	HANDLE hClient;
 	HANDLE hServer;
 	HANDLE clientUp;
-	Base base;
+	std::shared_ptr<Base> base;
 };

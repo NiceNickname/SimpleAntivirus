@@ -5,3 +5,5 @@ x64/
 #files
 *.user
 *.filters
+*.exe
+*.mp4

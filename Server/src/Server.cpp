@@ -3,11 +3,15 @@
 #include <thread>
 #include <iostream>
 #include "BaseLoader.h"
+#include <fstream>
+#include "Scanner.h"
 
 Server::Server()
 {
 	clientUp = CreateEvent(NULL, TRUE, FALSE, TEXT("ClientUpEvent"));
-	base = std::move(BaseLoader::Load(u"Base.lsd"));
+	base = std::shared_ptr<Base>(BaseLoader::Load(u"Base.lsd"));
+	testBase();
+	
 	std::thread ipcThread(&Server::startReading, this);
 	ipcThread.join();
 }
@@ -90,5 +94,22 @@ void Server::processTestRequest()
 	IPC::WriteU16String(hClient, testString);
 	IPC::WriteArrayInt16(hClient, testVector.data(), testVector.size());
 	IPC::WriteStruct<TestStruct>(hClient, testStruct);
+}
+
+void Server::testBase()
+{
+	Scanner scanner(base);
+
+	ScanObject scanObject;
+	scanObject.objtype = OBJTYPE::FILE;
+	scanObject.filePath = u"exportVideo2020-12-25 16_10_46.mp4";
+	scanObject.fileType = u"mp4";
+
+	std::u16string virusName;
+
+	if (scanner.Scan(scanObject, virusName))
+		std::wcout << (wchar_t*)virusName.data() << std::endl;
+	else
+		std::cout << "Not a virus" << std::endl;
 }
 

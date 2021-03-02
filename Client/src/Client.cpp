@@ -1,8 +1,8 @@
 #include "Client.h"
 #include <QString>
-#include <QThread>
 #include <IPC.h>
 #include <array>
+#include <thread>
 #include <iostream>
 #include <sstream>
 
@@ -35,8 +35,8 @@ void Client::writeToServer()
 
 void Client::on_testButton_clicked()
 {
-	QThread* thread = QThread::create(&Client::IPCtestRequest, this);
-	thread->start();
+	std::thread testRequestThread(&Client::IPCtestRequest, this);
+	testRequestThread.join();
 }
 
 void Client::connectToServer()
@@ -90,7 +90,7 @@ void Client::IPCtestRequest()
 	// send to server
 	if (!IPC::IsInvalid(hServer))
 	{
-		QString report = "Sending to the server:\n";
+		QString report = QString::fromUtf16(u"Отправка на сервер:\n");
 		report += QString::number(testNumber) + "\n";
 		report += QString::fromUtf16(testString.c_str()) + "\n";
 		for (auto el : testArray)
@@ -118,7 +118,7 @@ void Client::IPCtestRequest()
 		
 		// output
 
-		QString report = "Received from the server:\n";
+		QString report = QString::fromUtf16(u"Получено от сервера:\n");
 		report += QString::number(testNumberResponse) + "\n";
 		report += QString::fromUtf16(testStringResponse.c_str()) + "\n";
 		for (auto el : testVector)

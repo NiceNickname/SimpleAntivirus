@@ -51,6 +51,9 @@ public:
 	static void WriteU16String(HANDLE hSlot, const std::u16string& value);
 	static void WriteU16Char(HANDLE hSlot, char16_t value);
 
+	static void WriteASCIIString(HANDLE hSlot, const std::string& value);
+	static void WriteASCIIChar(HANDLE hSlot, char value);
+
 	// floats
 	static void WriteFloat32(HANDLE hSlot, float value);
 	static void WriteFloat64(HANDLE hSlot, double value);
@@ -95,6 +98,9 @@ public:
 	// string and character
 	static std::u16string ReadU16String(HANDLE hSlot);
 	static char16_t ReadU16Char(HANDLE hSlot);
+
+	static std::string ReadASCIIString(HANDLE hSlot);
+	static char ReadASCIIChar(HANDLE hSlot);
 
 	// floats
 	static float ReadFloat32(HANDLE hSlot);
