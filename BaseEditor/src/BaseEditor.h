@@ -16,7 +16,8 @@ private slots:
     void on_pathButton_clicked();
     void on_writeButton_clicked();
     void on_readButton_clicked();
-    void on_testDataButton_clicked();
+    void on_addButton_clicked();
+    void on_deleteButton_clicked();
     void cellChanged(int row, int column);
 
 private:

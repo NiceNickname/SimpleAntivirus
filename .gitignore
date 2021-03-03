@@ -1,9 +1,11 @@
 #directories
 .vs/
 x64/
+TestDirectory/
 
 #files
 *.user
 *.filters
 *.exe
 *.mp4
+*.diagsession

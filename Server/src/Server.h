@@ -13,8 +13,6 @@ private:
 	void startReading();
 	void processRequest();
 	void waitForClient();
-	void processTestRequest();
-	void testBase();
 
 private:
 	HANDLE hClient;

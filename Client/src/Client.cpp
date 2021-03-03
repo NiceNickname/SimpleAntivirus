@@ -1,23 +1,17 @@
-#include "Client.h"
 #include <QString>
+#include <QFileDialog>
+#include <QThread>
+#include <QProgressBar>
 #include <IPC.h>
-#include <array>
-#include <thread>
-#include <iostream>
-#include <sstream>
-
-struct TestStruct
-{
-	char testStringFromStruct[256];
-	int16_t testNumberFromStruct;
-};
-
+#include "Client.h"
 
 Client::Client(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
-	connect(this, &Client::output, ui.textEdit, &QTextEdit::append);
+	ui.scanProgressBar->hide();
+	connect(this, &Client::reportOutput, ui.reportTextEdit, &QTextEdit::append);
+	connect(this, &Client::setProgressBar, ui.scanProgressBar, &QProgressBar::setValue);
 	connectToServer();
 }
 
@@ -28,15 +22,24 @@ Client::~Client()
 	IPC::Disconnect(hClient);
 }
 
-void Client::writeToServer()
+
+void Client::on_scanButton_clicked()
 {
-	
+	ui.reportTextEdit->setText("Scanning in process...");
+	ui.scanProgressBar->setValue(0);
+	ui.scanProgressBar->show();
+	QThread* scanThread = QThread::create(&Client::scanRequest, this);
+	scanThread->start();
 }
 
-void Client::on_testButton_clicked()
+void Client::on_browseButton_clicked()
 {
-	std::thread testRequestThread(&Client::IPCtestRequest, this);
-	testRequestThread.join();
+	QFileDialog* dialog = new QFileDialog(nullptr, "OpenFileDialog", "./");
+	dialog->setFileMode(QFileDialog::Directory);
+	dialog->show();
+
+	if (dialog->exec())
+		ui.pathLineEdit->setText(dialog->selectedFiles()[0]);
 }
 
 void Client::connectToServer()
@@ -62,76 +65,27 @@ void Client::connectToServer()
 	SetEvent(clientUp);
 }
 
-void Client::readFromServer()
+
+void Client::scanRequest()
 {
-	
-}
+	IPC::WriteUInt8(hServer, (uint8_t)CMDCODE::SCAN);
+	IPC::WriteU16String(hServer, ui.pathLineEdit->text().toStdU16String());
 
-void Client::sendRequest()
-{
-	writeToServer();
-	readFromServer();
-}
+	uint64_t fileCount = IPC::ReadUInt64(hClient);
+	uint64_t scannedFilesCount = 0;
 
-void Client::IPCtestRequest()
-{
-	// TEST DATA
-	uint32_t testNumber = 10;
-
-	std::u16string testString = u"TestString";
-
-	std::array <int16_t, 5> testArray = {
-		1, 2, -3, 4, 5
-	};
-
-	TestStruct testStruct = { "Hello world", 20 };
-	////////////
-
-	// send to server
-	if (!IPC::IsInvalid(hServer))
+	for (uint64_t i = 0; i < fileCount; i++)
 	{
-		QString report = QString::fromUtf16(u"Отправка на сервер:\n");
-		report += QString::number(testNumber) + "\n";
-		report += QString::fromUtf16(testString.c_str()) + "\n";
-		for (auto el : testArray)
-			report += QString::number(el) + " ";
-		report += "\n";
-		report += testStruct.testStringFromStruct + QString("\n");
-		report += QString::number(testStruct.testNumberFromStruct) + "\n";
-
-		output(report);
-
-		IPC::WriteUInt8(hServer, (uint8_t)CMDCODE::TEST);
-		IPC::WriteUInt32(hServer, testNumber);
-		IPC::WriteU16String(hServer, testString);
-		IPC::WriteArrayInt16(hServer, testArray.data(), testArray.size());
-		IPC::WriteStruct<TestStruct>(hServer, testStruct);
-	}
-
-	if (!IPC::IsInvalid(hClient))
-	{
-		// read echo from server
-		uint32_t testNumberResponse = IPC::ReadUInt32(hClient);
-		std::u16string testStringResponse = IPC::ReadU16String(hClient);
-		std::vector<int16_t> testVector = IPC::ReadArrayInt16(hClient);
-		TestStruct testStructResponse = IPC::ReadStruct<TestStruct>(hClient);
+		std::u16string report = IPC::ReadU16String(hClient);
+		reportOutput(QString::fromUtf16(report.c_str()));
+		scannedFilesCount++;
 		
-		// output
-
-		QString report = QString::fromUtf16(u"Получено от сервера:\n");
-		report += QString::number(testNumberResponse) + "\n";
-		report += QString::fromUtf16(testStringResponse.c_str()) + "\n";
-		for (auto el : testVector)
-			report += QString::number(el) + " ";
-		report += "\n";
-		report += testStructResponse.testStringFromStruct + QString("\n");
-		report += QString::number(testStructResponse.testNumberFromStruct) + "\n";
-
-		output(report);
+		int percents = (scannedFilesCount / (float)fileCount) * 100;
+		setProgressBar(percents);
 	}
+	QString report = "Total files scanned: " + QString::number(scannedFilesCount);
+	reportOutput(report);
 }
-
-
 
 void Client::wakeUpServer()
 {

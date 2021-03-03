@@ -137,18 +137,14 @@ void BaseEditor::on_readButton_clicked()
 	Read(ui.pathLineEdit->text().toStdU16String());
 }
 
-void BaseEditor::on_testDataButton_clicked()
+void BaseEditor::on_addButton_clicked()
 {
-	for (size_t i = 0; i < ui.tableWidget->rowCount(); i++)
-	{
-		ui.tableWidget->setItem(i, 0, new QTableWidgetItem("trojan"));
-		ui.tableWidget->setItem(i, 1, new QTableWidgetItem("executable"));
-		ui.tableWidget->setItem(i, 2, new QTableWidgetItem(QString::number(2020)));
-		ui.tableWidget->setItem(i, 3, new QTableWidgetItem(QString::number(2323)));
-		ui.tableWidget->setItem(i, 4, new QTableWidgetItem(QString::number(23)));
-		ui.tableWidget->setItem(i, 5, new QTableWidgetItem(QString::number(2331)));
-		ui.tableWidget->setItem(i, 6, new QTableWidgetItem("a7bc2378378f"));
-	}
+	ui.tableWidget->setRowCount(ui.tableWidget->rowCount() + 1);
+}
+
+void BaseEditor::on_deleteButton_clicked()
+{
+	ui.tableWidget->setRowCount(ui.tableWidget->rowCount() - 1);
 }
 
 // signature adding algorithm

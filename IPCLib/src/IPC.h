@@ -19,7 +19,7 @@ enum class TYPECODE : uint8_t
 };
 enum class CMDCODE : uint8_t
 {
-	TEST = 0
+	SCAN = 0
 };
 
 class IPC

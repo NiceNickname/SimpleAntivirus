@@ -3,7 +3,6 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_Client.h"
 #include <Windows.h>
-#include <thread>
 
 class Client : public QMainWindow
 {
@@ -16,16 +15,16 @@ public:
 private:
     void connectToServer();
     void wakeUpServer();
-    void writeToServer();
-    void readFromServer();
-    void sendRequest();
-    void IPCtestRequest();
+    void scanRequest();
 
 signals:
-    void output(const QString& text);
+    void reportOutput(const QString& value);
+    void setProgressBar(int value);
+
 
 private slots:
-    void on_testButton_clicked();
+    void on_scanButton_clicked();
+    void on_browseButton_clicked();
 
 private:
     Ui::ClientClass ui;

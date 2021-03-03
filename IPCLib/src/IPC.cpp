@@ -1,5 +1,4 @@
 #include "IPC.h"
-#include <stdexcept>
 
 HANDLE IPC::CreateSlot(const std::u16string& name)
 {
