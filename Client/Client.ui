@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1664</width>
+    <width>1661</width>
     <height>934</height>
    </rect>
   </property>
@@ -60,6 +60,13 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="shutDownButton">
+      <property name="text">
+       <string>Shutdown</string>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="0" colspan="3">
      <widget class="QTextEdit" name="reportTextEdit">
       <property name="font">
@@ -69,7 +76,7 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="0" colspan="3">
+    <item row="3" column="0" colspan="2">
      <widget class="QProgressBar" name="scanProgressBar">
       <property name="value">
        <number>0</number>
@@ -83,7 +90,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1664</width>
+     <width>1661</width>
      <height>23</height>
     </rect>
    </property>

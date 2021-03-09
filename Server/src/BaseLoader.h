@@ -4,5 +4,5 @@
 class BaseLoader
 {
 public:
-	static Base* Load(const std::u16string& path);
+	static Base* load(const std::u16string& path);
 };

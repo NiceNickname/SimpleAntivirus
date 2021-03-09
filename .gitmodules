@@ -1,3 +1,6 @@
 [submodule "PicoSHA2"]
 	path = PicoSHA2
 	url = https://github.com/okdshin/PicoSHA2
+[submodule "libzip"]
+	path = libzip
+	url = https://github.com/nih-at/libzip.git

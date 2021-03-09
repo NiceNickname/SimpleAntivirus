@@ -1,66 +1,59 @@
 #include <thread>
+#include <IPCMailslot.h>
+#include <BinaryReader.h>
+
 #include "Server.h"
-#include "BaseLoader.h"
 #include "Scanner.h"
+#include "BaseLoader.h"
 
 Server::Server()
 {
-	clientUp = CreateEvent(NULL, TRUE, FALSE, TEXT("ClientUpEvent"));
-	base = std::shared_ptr<Base>(BaseLoader::Load(u"Base.lsd"));
-	
-	
-	std::thread ipcThread(&Server::startReading, this);
-	ipcThread.join();
+	base = std::shared_ptr<Base>(BaseLoader::load(u"Base.lsd"));
 }
 
-Server::~Server()
-{
-	IPC::Disconnect(hServer);
-	IPC::Disconnect(hClient);
-}
 
 void Server::startReading()
 {
-	hServer = IPC::CreateSlot(u"\\\\.\\mailslot\\server");
+	ipc = IPC::Mailslots(u"\\\\.\\mailslot\\server", u"\\\\.\\mailslot\\client");
 
-	while (true)
+	bool serverShutDown = false, clientShutDown = false;
+
+	while (!serverShutDown)
 	{
-		waitForClient();
+		ipc->connect();
 
-		while (WaitForSingleObject(clientUp, 0) != WAIT_TIMEOUT)
+		while (!clientShutDown)
 		{
-			if (!IPC::HasNewData(hServer))
-				continue;
+			processRequest(clientShutDown, serverShutDown);
 
-			processRequest();
+			if (serverShutDown)
+				break;
 		}
-		
-		IPC::Disconnect(hClient);
+
+		clientShutDown = false;
 	}
 }
 
 
-void Server::processRequest()
+void Server::processRequest(bool& clientShutDown, bool& serverShutDown)
 {
-	uint8_t cmdCode = IPC::ReadUInt8(hServer);
+	BinaryReader reader(ipc);
 
-	if (cmdCode == (uint8_t)CMDCODE::SCAN)
+	uint8_t cmdCode = reader.readUInt8();
+
+	if (cmdCode == (uint8_t)CMDCODE::SERVERSHUTDOWN)
+		serverShutDown = true;
+	else if (cmdCode == (uint8_t)CMDCODE::CLIENTSHUTDOWN)
+		clientShutDown = true;
+	else if (cmdCode == (uint8_t)CMDCODE::SCAN)
 	{
 		Scanner scanner(base);
-		scanner.Scan(IPC::ReadU16String(hServer), hClient);
+		scanner.scan(reader.readU16String(), ipc->writeHandle());
 	}
 }
 
-void Server::waitForClient()
+void Server::start()
 {
-	hClient = IPC::ConnectToSlot(u"\\\\.\\mailslot\\client");
-
-	while (IPC::IsInvalid(hClient))
-	{
-		Sleep(10);
-		hClient = IPC::ConnectToSlot(u"\\\\.\\mailslot\\client");
-	}
-
-	WaitForSingleObject(clientUp, INFINITE);
+	std::thread ipcThread(&Server::startReading, this);
+	ipcThread.join();
 }
-

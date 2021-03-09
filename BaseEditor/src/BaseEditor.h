@@ -9,8 +9,8 @@ class BaseEditor : public QMainWindow
 
 public:
     BaseEditor(QWidget *parent = Q_NULLPTR);
-    void Read(const std::u16string& path);
-    void Write(const std::u16string& path);
+    void read(const std::u16string& path);
+    void write(const std::u16string& path);
 
 private slots:
     void on_pathButton_clicked();

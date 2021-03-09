@@ -2,8 +2,15 @@
 #include <QFileDialog>
 #include <QThread>
 #include <QProgressBar>
+
 #include <IPC.h>
+#include <IPCMailslot.h>
+#include <BinaryReader.h>
+#include <BinaryWriter.h>
+#include <TlHelp32.h>
+
 #include "Client.h"
+
 
 Client::Client(QWidget *parent)
     : QMainWindow(parent)
@@ -17,15 +24,13 @@ Client::Client(QWidget *parent)
 
 Client::~Client()
 {
-	ResetEvent(clientUp);
-	IPC::Disconnect(hServer);
-	IPC::Disconnect(hClient);
+	BinaryWriter reader(ipc);
+	reader.writeUInt8((uint8_t)CMDCODE::CLIENTSHUTDOWN);
 }
-
 
 void Client::on_scanButton_clicked()
 {
-	ui.reportTextEdit->setText("Scanning in process...");
+	ui.reportTextEdit->setText("Scanning in progress...");
 	ui.scanProgressBar->setValue(0);
 	ui.scanProgressBar->show();
 	QThread* scanThread = QThread::create(&Client::scanRequest, this);
@@ -42,41 +47,37 @@ void Client::on_browseButton_clicked()
 		ui.pathLineEdit->setText(dialog->selectedFiles()[0]);
 }
 
+void Client::on_shutDownButton_clicked()
+{
+	BinaryWriter reader(ipc);
+	reader.writeUInt8((uint8_t)CMDCODE::SERVERSHUTDOWN);
+	QCoreApplication::quit();
+}
+
 void Client::connectToServer()
 {
-	hClient = IPC::CreateSlot(u"\\\\.\\mailslot\\client");
-	hServer = IPC::ConnectToSlot(u"\\\\.\\mailslot\\server");
+	wakeUpServer();
 
-	if (IPC::IsInvalid(hServer))
-	{
-		wakeUpServer();
+	ipc = IPC::Mailslots(u"\\\\.\\mailslot\\client", u"\\\\.\\mailslot\\server");
 
-		while (true)
-		{
-			hServer = IPC::ConnectToSlot(u"\\\\.\\mailslot\\server");
-
-			if (!IPC::IsInvalid(hServer))
-				break;
-
-			Sleep(10);
-		}
-	}
-	clientUp = OpenEvent(EVENT_ALL_ACCESS, NULL, TEXT("ClientUpEvent"));
-	SetEvent(clientUp);
+	ipc->connect();
 }
 
 
 void Client::scanRequest()
 {
-	IPC::WriteUInt8(hServer, (uint8_t)CMDCODE::SCAN);
-	IPC::WriteU16String(hServer, ui.pathLineEdit->text().toStdU16String());
+	BinaryWriter writer(ipc);
+	BinaryReader reader(ipc);
 
-	uint64_t fileCount = IPC::ReadUInt64(hClient);
+	writer.writeUInt8((uint8_t)CMDCODE::SCAN);
+	writer.writeU16String(ui.pathLineEdit->text().toStdU16String());
+
+	uint64_t fileCount = reader.readUInt64();
 	uint64_t scannedFilesCount = 0;
 
 	for (uint64_t i = 0; i < fileCount; i++)
 	{
-		std::u16string report = IPC::ReadU16String(hClient);
+		std::u16string report = reader.readU16String();
 		reportOutput(QString::fromUtf16(report.c_str()));
 		scannedFilesCount++;
 		
@@ -89,6 +90,26 @@ void Client::scanRequest()
 
 void Client::wakeUpServer()
 {
+	PROCESSENTRY32 entry;
+	entry.dwSize = sizeof(PROCESSENTRY32);
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+	if (Process32First(snapshot, &entry) == TRUE)
+	{
+		while (Process32Next(snapshot, &entry) == TRUE)
+		{
+			if (wcscmp(entry.szExeFile, L"Server.exe") == 0)
+			{
+				// if Server.exe is running, don't wakeup
+				CloseHandle(snapshot);
+				return;
+			}
+		}
+	}
+
+	CloseHandle(snapshot);
+
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&si, sizeof(si));

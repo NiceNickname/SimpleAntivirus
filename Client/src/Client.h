@@ -3,6 +3,7 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_Client.h"
 #include <Windows.h>
+#include <IPC.h>
 
 class Client : public QMainWindow
 {
@@ -25,10 +26,10 @@ signals:
 private slots:
     void on_scanButton_clicked();
     void on_browseButton_clicked();
+    void on_shutDownButton_clicked();
 
 private:
     Ui::ClientClass ui;
-    HANDLE hClient;
-    HANDLE hServer;
-    HANDLE clientUp;
+    
+    std::shared_ptr<IPC> ipc;
 };

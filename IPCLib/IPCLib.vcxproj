@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -143,10 +143,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\IPCMailslot.h" />
+    <ClInclude Include="src\BinaryReader.h" />
+    <ClInclude Include="src\BinaryWriter.h" />
     <ClInclude Include="src\IPC.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\BinaryReader.cpp" />
+    <ClCompile Include="src\BinaryWriter.cpp" />
     <ClCompile Include="src\IPC.cpp" />
+    <ClCompile Include="src\IPCMailslot.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

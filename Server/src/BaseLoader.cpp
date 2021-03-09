@@ -1,42 +1,38 @@
-#include "BaseLoader.h"
 #include <IPC.h>
+#include <BinaryReader.h>
 
+#include "BaseLoader.h"
 
-Base* BaseLoader::Load(const std::u16string& path)
+Base* BaseLoader::load(const std::u16string& path)
 {
-	wchar_t* wpath = (wchar_t*)path.c_str();
-	HANDLE file = CreateFile((wchar_t*)path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, 
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	BinaryReader reader(path);
 
-	if (file == INVALID_HANDLE_VALUE)
-		return new Base();
-
-	std::u16string header = IPC::ReadU16String(file);
+	std::u16string header = reader.readU16String();
 	if (header != std::u16string(u"Denisovich"))
 		return new Base();
 
-	uint64_t rowCount = IPC::ReadUInt64(file);
+	uint64_t rowCount = reader.readUInt64();
 
 	std::unordered_multimap<uint64_t, Record> base;
 	Record record;
 	for (int i = 0; i < rowCount; i++)
 	{
-		record.name = IPC::ReadU16String(file).c_str();
-		record.type = IPC::ReadU16String(file).c_str();
-		record.length = IPC::ReadUInt64(file);
+		record.name = reader.readU16String().c_str();
+		record.type = reader.readU16String().c_str();
+		record.length = reader.readUInt64();
 
-		uint64_t sigStart = IPC::ReadUInt64(file);
+		uint64_t sigStart = reader.readUInt64();
 		std::reverse((uint8_t*)&sigStart, ((uint8_t*)&sigStart) + 8);
 
 		record.sigStart = sigStart;
-		record.offsetStart = IPC::ReadUInt64(file);
-		record.offsetEnd = IPC::ReadUInt64(file);
-		record.sha256 = IPC::ReadASCIIString(file).c_str();
+		record.offsetStart = reader.readUInt64();
+		record.offsetEnd = reader.readUInt64();
+		record.sha256 = reader.readASCIIString().c_str();
 
 		base.insert({record.sigStart, record});
 	}
 
-	CloseHandle(file);
+	reader.close();
 
 	return new Base(std::move(base));
 }

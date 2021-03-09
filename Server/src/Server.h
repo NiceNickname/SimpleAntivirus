@@ -1,22 +1,21 @@
 #pragma once
 #include <IPC.h>
-#include "Base.h"
 #include <memory>
+#include "Base.h"
 
 class Server
 {
 public:
 	Server();
-	~Server();
+	~Server() = default;
+
+	void start();
 
 private:
 	void startReading();
-	void processRequest();
-	void waitForClient();
+	void processRequest(bool& clientShutDown, bool& serverShutDown);
 
 private:
-	HANDLE hClient;
-	HANDLE hServer;
-	HANDLE clientUp;
 	std::shared_ptr<Base> base;
+	std::shared_ptr<IPC> ipc;
 };

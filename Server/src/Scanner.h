@@ -1,11 +1,12 @@
 #pragma once
-#include "ScanObject.h"
 #include <string>
-#include "Base.h"
 #include <memory>
 #include <fstream>
-#include "ScanEngine.h"
 #include <Windows.h>
+
+#include "Base.h"
+#include "ScanObject.h"
+#include "ScanEngine.h"
 
 class Scanner
 {
@@ -13,11 +14,13 @@ public:
 	Scanner(const std::shared_ptr<Base>& base);
 	~Scanner() = default;
 
-	void Scan(const std::u16string& path, HANDLE hReportAddress);
+	void scan(const std::u16string& path, HANDLE hReportAddress);
 
 private:
-	void ScanDirectory(const std::u16string& path, HANDLE hReportAddress);
+	void scanDirectory(const std::u16string& path, HANDLE hReportAddress);
 
+
+	bool scanZip(const ScanObject& scanObject, std::u16string& virusName);
 private:
 	std::shared_ptr<Base> base;
 	ScanEngine engine;

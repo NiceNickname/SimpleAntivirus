@@ -1,6 +1,7 @@
 #pragma once
-#include "ScanObject.h"
 #include <memory>
+
+#include "ScanObject.h"
 #include "Base.h"
 
 class ScanEngine
@@ -9,13 +10,15 @@ public:
 	ScanEngine(const std::shared_ptr<Base>& base);
 	~ScanEngine() = default;
 
-	bool Scan(const ScanObject& scanObject, std::u16string& virusName);
+	bool scan(const ScanObject& scanObject, std::u16string& virusName);
 
 private:
-	bool ScanFile(const ScanObject& scanObject, std::u16string& virusName);
-	bool ScanMemory(const ScanObject& scanObject, std::u16string& virusName);
+	bool scanFile(const ScanObject& scanObject, std::u16string& virusName);
+	bool scanMemory(const ScanObject& scanObject, std::u16string& virusName);
+	bool scanZipEntry(const ScanObject& scanObject, std::u16string& virusName);
 	void updateBufferFromFile(std::ifstream& file);
 
+	void updateBufferFromZipEntry(zip_file* file);
 private:
 	std::shared_ptr<Base> base;
 
