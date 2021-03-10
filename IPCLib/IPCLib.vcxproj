@@ -147,12 +147,14 @@
     <ClInclude Include="src\BinaryReader.h" />
     <ClInclude Include="src\BinaryWriter.h" />
     <ClInclude Include="src\IPC.h" />
+    <ClInclude Include="src\ThreatList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BinaryReader.cpp" />
     <ClCompile Include="src\BinaryWriter.cpp" />
     <ClCompile Include="src\IPC.cpp" />
     <ClCompile Include="src\IPCMailslot.cpp" />
+    <ClCompile Include="src\ThreatList.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

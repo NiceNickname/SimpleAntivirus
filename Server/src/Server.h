@@ -2,6 +2,7 @@
 #include <IPC.h>
 #include <memory>
 #include "Base.h"
+#include "ThreatList.h"
 
 class Server
 {
@@ -18,4 +19,5 @@ private:
 private:
 	std::shared_ptr<Base> base;
 	std::shared_ptr<IPC> ipc;
+	std::shared_ptr<ThreatList> threats;
 };

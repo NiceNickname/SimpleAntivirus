@@ -68,8 +68,11 @@ bool ScanEngine::scanFile(const ScanObject& scanObject, std::u16string& virusNam
 
 bool ScanEngine::scanMemory(const ScanObject& scanObject, std::u16string& virusName)
 {
-	virusName = u"Memory scan is not implemented yet";
-	return true;
+	for (size_t i = 0; i < scanObject.size - minSigLength; i++)
+	{
+		if (base->find((uint8_t*)buffer.data() + i, i, scanObject.fileType, virusName))
+			return true;
+	}
 }
 
 bool ScanEngine::scanZipEntry(const ScanObject& scanObject, std::u16string& virusName)

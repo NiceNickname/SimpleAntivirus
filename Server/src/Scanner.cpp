@@ -11,18 +11,24 @@
 #define MZHEADER 0x5a4d
 #define ZIPHEADER 0x04034b50
 
-typedef std::basic_stringstream<char16_t> u16sstream;
-
-Scanner::Scanner(const std::shared_ptr<Base>& base)
+Scanner::Scanner(const std::shared_ptr<Base>& base, 
+	const std::shared_ptr<ThreatList>& threats)
 	: engine(base)
 {
 	this->base = base;
+	this->threats = threats;
 }
 
 void Scanner::scan(const std::u16string& path, HANDLE hReportAddress)
 {
+	threats->load();
+
 	if (std::filesystem::is_directory(path))
-		scanDirectory(path, hReportAddress);	
+		scanDirectory(path, hReportAddress);
+	else
+		scanFile(path, hReportAddress);
+
+	threats->save();
 }
 
 void Scanner::scanDirectory(const std::u16string& path, HANDLE hReportAddress)
@@ -40,10 +46,10 @@ void Scanner::scanDirectory(const std::u16string& path, HANDLE hReportAddress)
 
 	std::u16string virusName;
 
-	u16sstream sstream;
 
 	for (const auto& dirEntry : recursive_directory_iterator(path))
 	{
+		bool safe = true;
 		if (std::filesystem::is_directory(dirEntry))
 			continue;
 
@@ -68,9 +74,7 @@ void Scanner::scanDirectory(const std::u16string& path, HANDLE hReportAddress)
 			scanObject.fileType = u"PE";
 
 			if (engine.scan(scanObject, virusName))
-				sstream << path << " found " << virusName << std::endl;
-			else
-				sstream << path << " is safe " << std::endl;
+				safe = false;
 		}
 
 		else if (zipHeader == ZIPHEADER)
@@ -80,21 +84,74 @@ void Scanner::scanDirectory(const std::u16string& path, HANDLE hReportAddress)
 			scanObject.filePath = path;
 			scanObject.fileType = u"ZIP";
 
-			
+
 			if (scanZip(scanObject, virusName))
-				sstream << path << " found " << virusName << std::endl;
-			else
-				sstream << path << " is safe " << std::endl;
+				safe = false;
 		}
-		else
+
+		writer.writeU16String(path);
+		writer.writeUInt8((uint8_t)safe);
+		if (!safe)
 		{
-			sstream << path << " is safe " << std::endl;
+			writer.writeU16String(virusName);
+			threats->add(path);
 		}
-
-		writer.writeU16String(sstream.str());
-		sstream.str(u"");
-
 	}
+}
+
+void Scanner::scanFile(const std::u16string& path, HANDLE hReportAddress)
+{
+	BinaryWriter writer(hReportAddress);
+
+	uint64_t numberOfFiles = 1;
+	writer.writeUInt64(numberOfFiles);
+
+	std::u16string virusName;
+
+	bool safe = true;
+
+	std::ifstream fileStream((wchar_t*)path.c_str(), std::ios::binary);
+
+	uint16_t mzHeader;
+	uint32_t zipHeader;
+
+	fileStream.read((char*)&mzHeader, sizeof(uint16_t));
+	fileStream.seekg(0);
+	fileStream.read((char*)&zipHeader, sizeof(uint32_t));
+
+	fileStream.close();
+
+	if (mzHeader == MZHEADER)
+	{
+		ScanObject scanObject;
+		scanObject.objtype = OBJTYPE::DIRENTRY;
+		scanObject.filePath = path;
+		scanObject.fileType = u"PE";
+
+		if (engine.scan(scanObject, virusName))
+			safe = false;
+	}
+
+	else if (zipHeader == ZIPHEADER)
+	{
+		ScanObject scanObject;
+		scanObject.objtype = OBJTYPE::DIRENTRY;
+		scanObject.filePath = path;
+		scanObject.fileType = u"ZIP";
+
+
+		if (scanZip(scanObject, virusName))
+			safe = false;
+	}
+
+	writer.writeU16String(path);
+	writer.writeUInt8((uint8_t)safe);
+	if (!safe)
+	{
+		writer.writeU16String(virusName);
+		threats->add(path);
+	}
+
 }
 
 bool Scanner::scanZip(const ScanObject& scanObject, std::u16string& virusName)

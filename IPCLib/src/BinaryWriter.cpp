@@ -4,6 +4,10 @@ BinaryWriter::BinaryWriter(const std::u16string& path)
 {
 	handle = CreateFile((wchar_t*)path.c_str(), GENERIC_WRITE, 0, NULL, 
 		TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (handle == INVALID_HANDLE_VALUE)
+		handle = CreateFile((wchar_t*)path.c_str(), GENERIC_WRITE, 0, NULL,
+			CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
 BinaryWriter::BinaryWriter(const std::shared_ptr<IPC>& ipc)

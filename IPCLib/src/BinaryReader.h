@@ -18,6 +18,7 @@ public:
 	~BinaryReader() = default;
 
 	void close();
+	inline bool isOpen() { return handle != INVALID_HANDLE_VALUE; }
 
 	// signed integers
 	int8_t  readInt8();

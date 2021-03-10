@@ -9,6 +9,9 @@
 Server::Server()
 {
 	base = std::shared_ptr<Base>(BaseLoader::load(u"Base.lsd"));
+
+	threats = std::make_shared<ThreatList>(u"Threats.lsd");
+	threats->load();
 }
 
 
@@ -47,8 +50,16 @@ void Server::processRequest(bool& clientShutDown, bool& serverShutDown)
 		clientShutDown = true;
 	else if (cmdCode == (uint8_t)CMDCODE::SCAN)
 	{
-		Scanner scanner(base);
+		Scanner scanner(base, threats);
 		scanner.scan(reader.readU16String(), ipc->writeHandle());
+	}
+	else if (cmdCode == (uint8_t)CMDCODE::DELETETHREAT)
+	{
+		uint64_t threatIndex = reader.readUInt64();
+		std::u16string threatPath = threats->get(threatIndex);
+		DeleteFile((wchar_t*)threatPath.c_str());
+		threats->remove(threatIndex);
+		threats->save();
 	}
 }
 
