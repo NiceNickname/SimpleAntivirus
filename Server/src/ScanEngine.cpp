@@ -47,7 +47,10 @@ bool ScanEngine::scanFile(const ScanObject& scanObject, std::u16string& virusNam
 		for (size_t j = 0; j < bufferSize - maxSigLength; j++)
 		{
 			if (base->find((uint8_t*)buffer.data() + j, offset, scanObject.fileType, virusName))
+			{
+				fileStream.close();
 				return true;
+			}
 
 			offset++;
 		}
@@ -58,11 +61,14 @@ bool ScanEngine::scanFile(const ScanObject& scanObject, std::u16string& virusNam
 	for (size_t i = 0; i < bufferSize - minSigLength; i++)
 	{
 		if (base->find((uint8_t*)buffer.data() + i, offset, scanObject.fileType, virusName))
+		{
+			fileStream.close();
 			return true;
+		}
 
 		offset++;
 	}
-
+	fileStream.close();
 	return false;
 }
 
@@ -95,7 +101,10 @@ bool ScanEngine::scanZipEntry(const ScanObject& scanObject, std::u16string& viru
 		for (size_t j = 0; j < bufferSize - maxSigLength; j++)
 		{
 			if (base->find((uint8_t*)buffer.data() + j, offset, scanObject.fileType, virusName))
+			{
+				zip_fclose(file);
 				return true;
+			}
 
 			offset++;
 		}
@@ -106,11 +115,14 @@ bool ScanEngine::scanZipEntry(const ScanObject& scanObject, std::u16string& viru
 	for (size_t i = 0; i < bufferSize - minSigLength; i++)
 	{
 		if (base->find((uint8_t*)buffer.data() + i, offset, scanObject.fileType, virusName))
+		{
+			zip_fclose(file);
 			return true;
+		}
 
 		offset++;
 	}
-
+	zip_fclose(file);
 	return false;
 }
 

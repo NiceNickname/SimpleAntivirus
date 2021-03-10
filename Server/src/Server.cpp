@@ -5,6 +5,7 @@
 #include "Server.h"
 #include "Scanner.h"
 #include "BaseLoader.h"
+#include <fstream>
 
 Server::Server()
 {
@@ -57,9 +58,27 @@ void Server::processRequest(bool& clientShutDown, bool& serverShutDown)
 	{
 		uint64_t threatIndex = reader.readUInt64();
 		std::u16string threatPath = threats->get(threatIndex);
+
 		DeleteFile((wchar_t*)threatPath.c_str());
+		
 		threats->remove(threatIndex);
 		threats->save();
+	}
+	else if (cmdCode == (uint8_t)CMDCODE::QUARANTINE || cmdCode == (uint8_t)CMDCODE::UNQUARANTINE)
+	{
+		uint64_t threatIndex = reader.readUInt64();
+		std::u16string threatPath = threats->get(threatIndex);
+
+		std::fstream file((wchar_t*)threatPath.c_str());
+
+		uint32_t header = 0;
+
+		file.read((char*)&header, sizeof(uint32_t));
+		header = ~header;
+		file.seekg(0);
+		file.write((char*)&header, sizeof(uint32_t));
+		file.close();
+
 	}
 }
 

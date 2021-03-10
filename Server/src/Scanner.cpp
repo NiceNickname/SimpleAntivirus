@@ -223,7 +223,10 @@ bool Scanner::scanZip(const ScanObject& scanObject, std::u16string& virusName)
 			scanObject.fileType = u"PE";
 
 			if (engine.scan(scanObject, virusName))
+			{
+				zip_close(archive);
 				return true;
+			}
 		}
 
 		else if (zipHeader == ZIPHEADER)
@@ -235,10 +238,13 @@ bool Scanner::scanZip(const ScanObject& scanObject, std::u16string& virusName)
 			scanObject.fileType = u"ZIP";
 
 			if (scanZip(scanObject, virusName))
+			{
+				zip_close(archive);
 				return true;
+			}
 		}
 	}
-
+	zip_close(archive);
 	return false;
 
 	

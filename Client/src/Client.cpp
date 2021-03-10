@@ -89,6 +89,20 @@ void Client::on_deleteButton_clicked()
 }
 
 
+void Client::on_quarantineButton_clicked()
+{
+	uint64_t index = ui.threatList->row(ui.threatList->selectedItems()[0]);
+	QThread* quarantineThread = QThread::create(&Client::quarantineRequest, this, index);
+	quarantineThread->start();
+}
+
+void Client::on_unQuarantineButton_clicked()
+{
+	uint64_t index = ui.threatList->row(ui.threatList->selectedItems()[0]);
+	QThread* unQuarantineThread = QThread::create(&Client::unQuarantineRequest, this, index);
+	unQuarantineThread->start();
+}
+
 void Client::connectToServer()
 {
 	wakeUpServer();
@@ -144,6 +158,22 @@ void Client::deleteRequest(uint64_t index)
 	writer.writeUInt64(index);
 
 	threats->remove(index);
+}
+
+void Client::quarantineRequest(uint64_t index)
+{
+	BinaryWriter writer(ipc);
+
+	writer.writeUInt8((uint8_t)CMDCODE::QUARANTINE);
+	writer.writeUInt64(index);
+}
+
+void Client::unQuarantineRequest(uint64_t index)
+{
+	BinaryWriter writer(ipc);
+
+	writer.writeUInt8((uint8_t)CMDCODE::UNQUARANTINE);
+	writer.writeUInt64(index);
 }
 
 void Client::wakeUpServer()

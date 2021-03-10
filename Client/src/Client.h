@@ -19,6 +19,8 @@ private:
     void wakeUpServer();
     void scanRequest();
     void deleteRequest(uint64_t index);
+    void quarantineRequest(uint64_t index);
+    void unQuarantineRequest(uint64_t index);
 
 signals:
     void reportOutput(const QString& value);
@@ -31,6 +33,8 @@ private slots:
     void on_reportButton_clicked();
     void on_backButton_clicked();
     void on_deleteButton_clicked();
+    void on_quarantineButton_clicked();
+    void on_unQuarantineButton_clicked();
 
 private:
     Ui::ClientClass ui;
