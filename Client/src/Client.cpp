@@ -9,7 +9,7 @@
 #include <BinaryReader.h>
 #include <BinaryWriter.h>
 #include <TlHelp32.h>
-
+#include <QTime>
 #include "Client.h"
 
 #include "FileDialog.h"
@@ -22,6 +22,8 @@ Client::Client(QWidget *parent)
 	ui.scanProgressBar->hide();
 	connect(this, &Client::reportOutput, ui.reportTextEdit, &QTextEdit::append);
 	connect(this, &Client::setProgressBar, ui.scanProgressBar, &QProgressBar::setValue);
+	connect(this, &Client::removeItem, ui.threatList, &QListWidget::takeItem);
+	connect(this, &Client::reportButtonEnabled, ui.reportButton, &QPushButton::setEnabled);
 	connectToServer();
 	threats = std::make_unique<ThreatList>(u"Threats.lsd");
 }
@@ -34,11 +36,11 @@ Client::~Client()
 
 void Client::on_scanButton_clicked()
 {
+	ui.reportButton->setEnabled(false);
 	ui.reportTextEdit->setText("Scanning in progress...");
 	ui.scanProgressBar->setValue(0);
 	ui.scanProgressBar->show();
-	//ui.reportButton->setEnabled(false);
-	QThread* scanThread = QThread::create(&Client::scanRequest, this);
+	scanThread = QThread::create(&Client::scanRequest, this);
 	scanThread->start();
 }
 
@@ -50,8 +52,6 @@ void Client::on_browseButton_clicked()
 
 	if (dialog->exec())
 		ui.pathLineEdit->setText(dialog->selectedFiles()[0]);
-
-
 }
 
 void Client::on_shutDownButton_clicked()
@@ -61,6 +61,16 @@ void Client::on_shutDownButton_clicked()
 	QCoreApplication::quit();
 }
 
+
+void Client::on_schedulePageButton_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(3);
+}
+
+void Client::on_monitorPageButton_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(2);
+}
 
 void Client::on_reportButton_clicked()
 {
@@ -82,8 +92,10 @@ void Client::on_backButton_clicked()
 
 void Client::on_deleteButton_clicked()
 {
+	if (ui.threatList->selectedItems().empty())
+		return;
+
 	uint64_t index = ui.threatList->row(ui.threatList->selectedItems()[0]);
-	ui.threatList->takeItem(index);
 	QThread* deleteThread = QThread::create(&Client::deleteRequest, this, index);
 	deleteThread->start();
 }
@@ -103,6 +115,111 @@ void Client::on_unQuarantineButton_clicked()
 	unQuarantineThread->start();
 }
 
+void Client::on_monitorButton_clicked()
+{
+	QThread* monitorSetupThread = QThread::create(&Client::setupMonitor, this, ui.monitorPathEdit->text().toStdU16String());
+	monitorSetupThread->start();
+
+	ui.monitorTable->setRowCount(ui.monitorTable->rowCount() + 1);
+
+	int lastIndex = ui.monitorTable->rowCount() - 1;
+	ui.monitorTable->setItem(lastIndex, 0, new QTableWidgetItem(ui.monitorPathEdit->text()));
+}
+
+void Client::on_stopScanButton_clicked()
+{
+	scanThread->terminate();
+	scanThread->wait();
+
+	BinaryWriter writer(ipc);
+
+	writer.writeUInt8((uint8_t)CMDCODE::STOPSCAN);
+	
+
+	BinaryReader reader(ipc);
+	bool success = (bool)reader.readUInt8();
+
+
+	if (success)
+	{
+		reportOutput("Scanning stopped");
+	}
+}
+
+void Client::on_stopMonitorButton_clicked()
+{
+	if (ui.monitorTable->selectedItems().empty())
+		return;
+
+	uint64_t index = ui.monitorTable->row(ui.monitorTable->selectedItems()[0]);
+
+	ui.monitorTable->removeRow(index);
+
+	BinaryWriter writer(ipc);
+
+	writer.writeUInt8((uint8_t)CMDCODE::STOPMONITOR);
+	writer.writeUInt64(index);
+}
+
+void Client::on_monitorBackButton_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(0);
+}
+
+void Client::on_monitorBrowseButton_clicked()
+{
+	FileDialog* dialog = new FileDialog(nullptr);
+	dialog->setFileMode(QFileDialog::Directory);
+	dialog->show();
+
+	if (dialog->exec())
+		ui.monitorPathEdit->setText(dialog->selectedFiles()[0]);
+}
+
+void Client::on_scheduleScanButton_clicked()
+{
+	BinaryWriter writer(ipc);
+	writer.writeUInt8((uint8_t)CMDCODE::SCHEDULESCAN);
+		
+	writer.writeU16String(ui.schedulePathEdit->text().toStdU16String());
+	uint32_t hours = (uint32_t)(ui.scheduleTimeEdit->time().hour());
+	uint32_t minutes = (uint32_t)(ui.scheduleTimeEdit->time().minute());
+	writer.writeUInt32(hours);
+	writer.writeUInt32(minutes);
+
+
+	ui.scheduleScanTable->setRowCount(ui.scheduleScanTable->rowCount() + 1);
+
+	int lastIndex = ui.scheduleScanTable->rowCount() - 1;
+	ui.scheduleScanTable->setItem(lastIndex, 0, new QTableWidgetItem(ui.schedulePathEdit->text()));
+
+	QString time = QString::number(hours) + QString(":") + QString::number(minutes);
+	ui.scheduleScanTable->setItem(lastIndex, 1, new QTableWidgetItem(time));
+}
+
+void Client::on_scheduleBackButton_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(0);
+}
+
+void Client::on_cancelScheduleScanButton_clicked()
+{
+
+	// send request
+
+	ui.scheduleScanTable->setRowCount(ui.scheduleScanTable->rowCount() - 1);
+}
+
+void Client::on_scheduleBrowseButton_clicked()
+{
+	FileDialog* dialog = new FileDialog(nullptr);
+	dialog->setFileMode(QFileDialog::Directory);
+	dialog->show();
+
+	if (dialog->exec())
+		ui.schedulePathEdit->setText(dialog->selectedFiles()[0]);
+}
+
 void Client::connectToServer()
 {
 	wakeUpServer();
@@ -116,10 +233,13 @@ void Client::connectToServer()
 void Client::scanRequest()
 {
 	BinaryWriter writer(ipc);
-	BinaryReader reader(ipc);
+	scanIpc.reset();
+	scanIpc = IPC::Mailslots(u"\\\\.\\mailslot\\clientScan", u"\\\\.\\mailslot\\server");
+	BinaryReader reader(scanIpc);
 
 	writer.writeUInt8((uint8_t)CMDCODE::SCAN);
 	writer.writeU16String(ui.pathLineEdit->text().toStdU16String());
+	writer.writeU16String(u"\\\\.\\mailslot\\clientScan");
 
 	uint64_t fileCount = reader.readUInt64();
 	uint64_t scannedFilesCount = 0;
@@ -148,6 +268,7 @@ void Client::scanRequest()
 	}
 	QString report = "Total files scanned: " + QString::number(scannedFilesCount);
 	reportOutput(report);
+	reportButtonEnabled(true);
 }
 
 void Client::deleteRequest(uint64_t index)
@@ -157,7 +278,14 @@ void Client::deleteRequest(uint64_t index)
 	writer.writeUInt8((uint8_t)CMDCODE::DELETETHREAT);
 	writer.writeUInt64(index);
 
-	threats->remove(index);
+	BinaryReader reader(ipc);
+	bool success = (bool)reader.readUInt8();
+
+	if (success)
+	{
+		threats->remove(index);
+		removeItem(index);
+	}
 }
 
 void Client::quarantineRequest(uint64_t index)
@@ -174,6 +302,14 @@ void Client::unQuarantineRequest(uint64_t index)
 
 	writer.writeUInt8((uint8_t)CMDCODE::UNQUARANTINE);
 	writer.writeUInt64(index);
+}
+
+void Client::setupMonitor(const std::u16string& path)
+{
+	BinaryWriter writer(ipc);
+
+	writer.writeUInt8((uint8_t)CMDCODE::MONITOR);
+	writer.writeU16String(path);
 }
 
 void Client::wakeUpServer()

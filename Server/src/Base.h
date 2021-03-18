@@ -18,7 +18,7 @@ public:
 	Base& operator=(Base&& other);
 
 
-	bool find(uint8_t* address, uint64_t offset, const std::u16string& type, std::u16string& name);
+	bool find(char* address, uint64_t offset, const std::u16string& type, std::u16string& name);
 	
 
 private:

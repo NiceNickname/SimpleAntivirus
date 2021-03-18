@@ -10,6 +10,18 @@ ScanEngine::ScanEngine(const std::shared_ptr<Base>& base)
 	buffer.resize(bufferSize, 0);
 }
 
+ScanEngine::ScanEngine()
+{
+}
+
+ScanEngine& ScanEngine::operator=(const ScanEngine& other)
+{
+	buffer = other.buffer;
+	base = other.base;
+
+	return *this;
+}
+
 bool ScanEngine::scan(const ScanObject& scanObject, std::u16string& virusName)
 {
 	if (scanObject.objtype == OBJTYPE::DIRENTRY)
@@ -46,7 +58,7 @@ bool ScanEngine::scanFile(const ScanObject& scanObject, std::u16string& virusNam
 	{
 		for (size_t j = 0; j < bufferSize - maxSigLength; j++)
 		{
-			if (base->find((uint8_t*)buffer.data() + j, offset, scanObject.fileType, virusName))
+			if (base->find(buffer.data() + j, offset, scanObject.fileType, virusName))
 			{
 				fileStream.close();
 				return true;
@@ -60,7 +72,7 @@ bool ScanEngine::scanFile(const ScanObject& scanObject, std::u16string& virusNam
 	// check last chunk of data
 	for (size_t i = 0; i < bufferSize - minSigLength; i++)
 	{
-		if (base->find((uint8_t*)buffer.data() + i, offset, scanObject.fileType, virusName))
+		if (base->find(buffer.data() + i, offset, scanObject.fileType, virusName))
 		{
 			fileStream.close();
 			return true;
@@ -76,9 +88,11 @@ bool ScanEngine::scanMemory(const ScanObject& scanObject, std::u16string& virusN
 {
 	for (size_t i = 0; i < scanObject.size - minSigLength; i++)
 	{
-		if (base->find((uint8_t*)buffer.data() + i, i, scanObject.fileType, virusName))
+		if (base->find(buffer.data() + i, i, scanObject.fileType, virusName))
 			return true;
 	}
+
+	return false;
 }
 
 bool ScanEngine::scanZipEntry(const ScanObject& scanObject, std::u16string& virusName)
@@ -100,7 +114,7 @@ bool ScanEngine::scanZipEntry(const ScanObject& scanObject, std::u16string& viru
 	{
 		for (size_t j = 0; j < bufferSize - maxSigLength; j++)
 		{
-			if (base->find((uint8_t*)buffer.data() + j, offset, scanObject.fileType, virusName))
+			if (base->find(buffer.data() + j, offset, scanObject.fileType, virusName))
 			{
 				zip_fclose(file);
 				return true;
@@ -114,7 +128,7 @@ bool ScanEngine::scanZipEntry(const ScanObject& scanObject, std::u16string& viru
 	// check last chunk of data
 	for (size_t i = 0; i < bufferSize - minSigLength; i++)
 	{
-		if (base->find((uint8_t*)buffer.data() + i, offset, scanObject.fileType, virusName))
+		if (base->find(buffer.data() + i, offset, scanObject.fileType, virusName))
 		{
 			zip_fclose(file);
 			return true;

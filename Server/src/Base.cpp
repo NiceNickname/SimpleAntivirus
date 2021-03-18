@@ -1,5 +1,6 @@
 #include "Base.h"
 #include <picosha2.h>
+#include <memory>
 
 Base::Base(std::unordered_multimap<uint64_t, Record>&& base)
 {
@@ -11,12 +12,15 @@ Base::Base(Base&& other)
 	this->base = std::move(other.base);
 }
 
-bool Base::find(uint8_t* address, uint64_t offset, const std::u16string& type, std::u16string& name)
+bool Base::find(char* address, uint64_t offset, const std::u16string& type, std::u16string& name)
 {
-	uint64_t key = *((uint64_t*)(address));
+	
+	uint64_t key;
+	memcpy((void*)&key, (void*)address, sizeof(key));
+	
 	auto entries = base.equal_range(key);
 
-	for (auto it = entries.first; it != entries.second; it++)
+	for (auto& it = entries.first; it != entries.second; it++)
 	{
 		if (it->second.type == type)
 		{
@@ -27,7 +31,7 @@ bool Base::find(uint8_t* address, uint64_t offset, const std::u16string& type, s
 					name = it->second.name;
 					return true;
 				}
-				std::vector<uint8_t> bytes(address + 8, address + it->second.length);
+				std::vector<char> bytes(address + 8, address + it->second.length);
 				std::string hash_hex_str;
 				picosha2::hash256_hex_string(bytes, hash_hex_str);
 

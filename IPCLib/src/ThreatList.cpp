@@ -1,25 +1,41 @@
 #include "ThreatList.h"
 #include "BinaryReader.h"
 #include "BinaryWriter.h"
+#include <algorithm>
+
 
 ThreatList::ThreatList(const std::u16string& path)
 {
 	this->path = path;
+	mutex = OpenMutex(SYNCHRONIZE, FALSE, L"Mutex");
+}
+
+ThreatList::~ThreatList()
+{
+	CloseHandle(mutex);
 }
 
 void ThreatList::load()
 {
+	WaitForSingleObject(mutex, INFINITE);
 	threats.resize(0);
 
 	BinaryReader reader(path);
 
 	if (!reader.isOpen())
+	{
+		ReleaseMutex(mutex);
 		return;
+	}
 
 	std::u16string header = reader.readU16String();
 
 	if (header != u"Denisovich")
+	{
+		reader.close();
+		ReleaseMutex(mutex);
 		return;
+	}
 
 	uint64_t recordCount = reader.readUInt64();
 
@@ -30,10 +46,13 @@ void ThreatList::load()
 
 
 	reader.close();
+	ReleaseMutex(mutex);
+
 }
 
 void ThreatList::save()
 {
+	WaitForSingleObject(mutex, INFINITE);
 	BinaryWriter writer(path);
 
 	writer.writeU16String(u"Denisovich");
@@ -46,16 +65,33 @@ void ThreatList::save()
 	}
 
 	writer.close();
+	ReleaseMutex(mutex);
 }
 
 void ThreatList::add(const std::u16string& threatPath)
 {
-	if (std::find(threats.begin(), threats.end(), threatPath) == threats.end())
-		threats.push_back(threatPath);
+	std::u16string path = threatPath;
+
+	std::replace(path.begin(), path.end(), u'\\', u'/');
+	if (std::find(threats.begin(), threats.end(), path) == threats.end())
+		threats.push_back(path);
+}
+
+void ThreatList::add(uint64_t threatIndex, const std::u16string& threatPath)
+{
+	threats.insert(threats.begin() + threatIndex, threatPath);
 }
 
 void ThreatList::remove(uint64_t index)
 {
 	threats.erase(threats.begin() + index);
+}
+
+void ThreatList::log()
+{
+	for (std::u16string el : threats)
+	{
+		std::wcout << (wchar_t*)el.c_str() << std::endl;
+	}
 }
 

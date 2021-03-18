@@ -19,7 +19,8 @@ enum class TYPECODE : uint8_t
 };
 enum class CMDCODE : uint8_t
 {
-	SERVERSHUTDOWN = 0, CLIENTSHUTDOWN, SCAN, STOPSCAN, DELETETHREAT, QUARANTINE, UNQUARANTINE
+	SERVERSHUTDOWN = 0, CLIENTSHUTDOWN, SCAN, STOPSCAN, DELETETHREAT, QUARANTINE, UNQUARANTINE,
+	MONITOR, STOPMONITOR, SCHEDULESCAN
 };
 
 class IPCMailslot;
@@ -33,4 +34,8 @@ public:
 	virtual HANDLE readHandle() = 0;
 	virtual HANDLE writeHandle() = 0;
 
+	virtual void clear() = 0;
+	virtual void disconnect() = 0;
+
 };
+

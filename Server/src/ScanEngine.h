@@ -8,7 +8,10 @@ class ScanEngine
 {
 public:
 	ScanEngine(const std::shared_ptr<Base>& base);
+	ScanEngine();
 	~ScanEngine() = default;
+
+	ScanEngine& operator=(const ScanEngine& other);
 
 	bool scan(const ScanObject& scanObject, std::u16string& virusName);
 

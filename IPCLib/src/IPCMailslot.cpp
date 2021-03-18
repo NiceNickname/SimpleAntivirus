@@ -41,3 +41,41 @@ void IPCMailslot::connect()
 			(HANDLE)NULL);
 	}
 }
+
+void IPCMailslot::clear()
+{
+	DWORD cbMessage, cMessage, cAllMessages, cbRead;
+
+	HRESULT fResult = GetMailslotInfo(readSlot, 
+		(LPDWORD)NULL,               
+		&cbMessage,                  
+		&cMessage,      
+		(LPDWORD)NULL);
+
+	if (cbMessage == MAILSLOT_NO_MESSAGE)
+	{
+		return;
+	}
+
+	cAllMessages = cMessage;
+
+	char buffer[2048];
+
+	while (cMessage != 0)  // retrieve all messages
+	{
+
+		fResult = ReadFile(readSlot,
+			buffer,
+			cbMessage,
+			&cbRead,
+			NULL);
+
+		cMessage--;
+	}
+}
+
+void IPCMailslot::disconnect()
+{
+	CloseHandle(readSlot);
+	CloseHandle(writeSlot);
+}
