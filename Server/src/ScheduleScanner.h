@@ -18,7 +18,12 @@ public:
 	void setScanTime(uint32_t hours, uint32_t minutes);
 	void setScanPath(const std::u16string& path);
 
+	inline uint32_t getHours() { return hours; }
+	inline uint32_t getMinutes() { return minutes; }
+	inline std::u16string getPath() { return scanPath; }
+
 	void start();
+	inline void cancel() { shouldStop = true; }
 
 	~ScheduleScanner() = default;
 
@@ -29,4 +34,5 @@ private:
 	Scanner scanner;
 	uint32_t hours = 0, minutes = 0;
 	std::u16string scanPath;
+	bool shouldStop = false;
 };

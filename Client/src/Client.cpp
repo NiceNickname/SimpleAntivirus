@@ -14,18 +14,25 @@
 
 #include "FileDialog.h"
 
+#define SVCNAME TEXT("Denisovich Anti-Virus")
 
 Client::Client(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
 	ui.scanProgressBar->hide();
+	QHeaderView* monitorTableHeaderView = ui.monitorTable->horizontalHeader();
+	monitorTableHeaderView->setSectionResizeMode(0, QHeaderView::Stretch);
+	QHeaderView* scheduleTableHeaderView = ui.scheduleScanTable->horizontalHeader();
+	scheduleTableHeaderView->setSectionResizeMode(0, QHeaderView::Stretch);
+
 	connect(this, &Client::reportOutput, ui.reportTextEdit, &QTextEdit::append);
 	connect(this, &Client::setProgressBar, ui.scanProgressBar, &QProgressBar::setValue);
 	connect(this, &Client::removeItem, ui.threatList, &QListWidget::takeItem);
-	connect(this, &Client::reportButtonEnabled, ui.reportButton, &QPushButton::setEnabled);
 	connectToServer();
 	threats = std::make_unique<ThreatList>(u"Threats.lsd");
+	loadMonitors();
+	loadScanners();
 }
 
 Client::~Client()
@@ -36,7 +43,6 @@ Client::~Client()
 
 void Client::on_scanButton_clicked()
 {
-	ui.reportButton->setEnabled(false);
 	ui.reportTextEdit->setText("Scanning in progress...");
 	ui.scanProgressBar->setValue(0);
 	ui.scanProgressBar->show();
@@ -204,10 +210,16 @@ void Client::on_scheduleBackButton_clicked()
 
 void Client::on_cancelScheduleScanButton_clicked()
 {
+	if (ui.scheduleScanTable->selectedItems().empty())
+		return;
 
-	// send request
+	uint64_t index = ui.scheduleScanTable->row(ui.scheduleScanTable->selectedItems()[0]);
 
-	ui.scheduleScanTable->setRowCount(ui.scheduleScanTable->rowCount() - 1);
+	BinaryWriter writer(ipc);
+	writer.writeUInt8((uint8_t)CMDCODE::CANCELSCHEDULESCAN);
+	writer.writeUInt64(index);
+
+	ui.scheduleScanTable->removeRow(index);
 }
 
 void Client::on_scheduleBrowseButton_clicked()
@@ -268,7 +280,6 @@ void Client::scanRequest()
 	}
 	QString report = "Total files scanned: " + QString::number(scannedFilesCount);
 	reportOutput(report);
-	reportButtonEnabled(true);
 }
 
 void Client::deleteRequest(uint64_t index)
@@ -312,51 +323,97 @@ void Client::setupMonitor(const std::u16string& path)
 	writer.writeU16String(path);
 }
 
-void Client::wakeUpServer()
+void Client::loadMonitors()
 {
-	PROCESSENTRY32 entry;
-	entry.dwSize = sizeof(PROCESSENTRY32);
+	std::u16string filePath = u"Monitors.lsd";
+	BinaryReader reader(filePath);
+	if (!reader.isOpen())
+		return;
 
-	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-	if (Process32First(snapshot, &entry) == TRUE)
+	std::u16string header = reader.readU16String();
+	if (header != u"Denisovich")
 	{
-		while (Process32Next(snapshot, &entry) == TRUE)
-		{
-			if (wcscmp(entry.szExeFile, L"Server.exe") == 0)
-			{
-				// if Server.exe is running, don't wakeup
-				CloseHandle(snapshot);
-				return;
-			}
-		}
+		reader.close();
+		return;
+	}
+	uint64_t recordNumber = reader.readUInt64();
+
+	for (size_t i = 0; i < recordNumber; i++)
+	{
+		std::u16string scanPath = reader.readU16String();
+
+		ui.monitorTable->setRowCount(ui.monitorTable->rowCount() + 1);
+
+		int lastIndex = ui.monitorTable->rowCount() - 1;
+		ui.monitorTable->setItem(lastIndex, 0, new QTableWidgetItem(QString::fromUtf16(scanPath.c_str())));
 	}
 
-	CloseHandle(snapshot);
+	reader.close();
+}
 
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	ZeroMemory(&pi, sizeof(pi));
-	wchar_t path[256] = L"Server.exe";
-	if (!CreateProcess(NULL,
-		path,
-		NULL,
-		NULL,
-		FALSE,
-		0,
-		NULL,
-		NULL,
-		&si,
-		&pi)
-		)	
+void Client::loadScanners()
+{
+	std::u16string filePath = u"Scanners.lsd";
+
+	BinaryReader reader(filePath);
+	if (!reader.isOpen())
+		return;
+
+	std::u16string header = reader.readU16String();
+	if (header != u"Denisovich")
+	{
+		reader.close();
+		return;
+	}
+	uint64_t recordNumber = reader.readUInt64();
+
+	for (size_t i = 0; i < recordNumber; i++)
+	{
+		std::u16string scanPath = reader.readU16String();
+		uint32_t hours = reader.readUInt32();
+		uint32_t minutes = reader.readUInt32();
+
+		ui.scheduleScanTable->setRowCount(ui.scheduleScanTable->rowCount() + 1);
+
+		int lastIndex = ui.scheduleScanTable->rowCount() - 1;
+		ui.scheduleScanTable->setItem(lastIndex, 0, new QTableWidgetItem(QString::fromUtf16(scanPath.c_str())));
+		QString time = QString::number(hours) + QString(":") + QString::number(minutes);
+
+		ui.scheduleScanTable->setItem(lastIndex, 1, new QTableWidgetItem(time));
+	}
+
+	reader.close();
+}
+
+void Client::wakeUpServer()
+{
+	SC_HANDLE schSCManager = OpenSCManager(
+		NULL,                    // local computer
+		NULL,                    // ServicesActive database 
+		SC_MANAGER_CONNECT);  
+
+	if (NULL == schSCManager)
 	{
 		HRESULT error = GetLastError();
+		printf("OpenSCManager failed (%d)\n", error);
 		return;
 	}
 
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+	SC_HANDLE schService = OpenService(
+		schSCManager,         // SCM database 
+		SVCNAME,            // name of service 
+		SERVICE_START |
+		SERVICE_QUERY_STATUS |
+		SERVICE_ENUMERATE_DEPENDENTS);
+
+	if (schService == NULL)
+	{
+		printf("OpenService failed (%d)\n", GetLastError());
+		CloseServiceHandle(schSCManager);
+		return;
+	}
+
+
+	StartService(schService, NULL, NULL);
 }
 

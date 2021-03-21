@@ -119,9 +119,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(SolutionDir)IPCLib\src\;$(SolutionDir)PicoSHA2\;$(SolutionDir)libzip\lib;$(SolutionDir)libzip\build</AdditionalIncludeDirectories>
@@ -142,9 +142,9 @@ copy /Y "$(SolutionDir)libzip\build\lib\Debug\zip.dll" "$(TargetDir)zip.dll" </C
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(SolutionDir)IPCLib\src\;$(SolutionDir)PicoSHA2\;$(SolutionDir)libzip\lib;$(SolutionDir)libzip\build</AdditionalIncludeDirectories>
@@ -171,9 +171,11 @@ copy /Y "$(SolutionDir)libzip\build\lib\Release\zip.dll" "$(TargetDir)zip.dll" <
     <ClCompile Include="src\Scanner.cpp" />
     <ClCompile Include="src\ScheduleScanner.cpp" />
     <ClCompile Include="src\Server.cpp" />
+    <ClCompile Include="src\ServiceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Monitor.h" />
+    <ClInclude Include="src\sample.h" />
     <ClInclude Include="src\ScanEngine.h" />
     <ClInclude Include="src\Scanner.h" />
     <ClInclude Include="src\ScanObject.h" />
@@ -181,6 +183,7 @@ copy /Y "$(SolutionDir)libzip\build\lib\Release\zip.dll" "$(TargetDir)zip.dll" <
     <ClInclude Include="src\BaseLoader.h" />
     <ClInclude Include="src\ScheduleScanner.h" />
     <ClInclude Include="src\Server.h" />
+    <ClInclude Include="src\ServiceManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IPCLib\IPCLib.vcxproj">

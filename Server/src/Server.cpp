@@ -14,14 +14,8 @@ HANDLE mutex;
 Server::Server()
 {
 	mutex = CreateMutex(NULL, FALSE, L"Mutex");
-	base = std::shared_ptr<Base>(BaseLoader::load(u"Base.lsd"));
-	monitors.reserve(1000);
-	threats = std::make_shared<ThreatList>(u"Threats.lsd");
-	threats->load();
-
-	scanner = Scanner(base, threats);
-	scheduledScanner = ScheduleScanner(base, threats);
-	
+	monitors.reserve(100);
+	scheduleScanners.reserve(100);
 }
 
 
@@ -34,26 +28,21 @@ void Server::startReading()
 {
 	ipc = IPC::Mailslots(u"\\\\.\\mailslot\\server", u"\\\\.\\mailslot\\client");
 
-	bool serverShutDown = false, clientShutDown = false;
-
-	while (!serverShutDown)
+	while (true)
 	{
 		ipc->connect();
 
-		while (!clientShutDown)
+		while (!clientShutdown)
 		{
-			processRequest(clientShutDown, serverShutDown);
-
-			if (serverShutDown)
-				break;
+			processRequest();
 		}
 
-		clientShutDown = false;
+		clientShutdown = false;
 	}
 }
 
 
-void Server::processRequest(bool& clientShutDown, bool& serverShutDown)
+void Server::processRequest()
 {
 	BinaryReader reader(ipc);
 
@@ -61,15 +50,13 @@ void Server::processRequest(bool& clientShutDown, bool& serverShutDown)
 
 	if (cmdCode == (uint8_t)CMDCODE::SERVERSHUTDOWN)
 	{
-		for (auto& el : monitors)
-		{
-			el.stop();
-		}
-		serverShutDown = true;
+		shutDown();
 	}
 	else if (cmdCode == (uint8_t)CMDCODE::CLIENTSHUTDOWN)
 	{
-		clientShutDown = true;
+		saveMonitors();
+		saveScheduleScanners();
+		clientShutdown = true;
 	}
 	else if (cmdCode == (uint8_t)CMDCODE::SCAN) 
 	{
@@ -117,11 +104,20 @@ void Server::processRequest(bool& clientShutDown, bool& serverShutDown)
 	{
 		scheduleScan();
 	}
+	else if (cmdCode == (uint8_t)CMDCODE::CANCELSCHEDULESCAN)
+	{
+		BinaryReader reader(ipc);
+		uint64_t index = reader.readUInt64();
+		scheduleScanners[index].cancel();
+
+		scheduleScanners.erase(scheduleScanners.begin() + index);
+	}
 }
 
 
 void Server::deleteRequest()
 {
+	// check if file exists
 	BinaryReader reader(ipc);
 	uint64_t threatIndex = reader.readUInt64();
 	std::u16string threatPath = threats->get(threatIndex);
@@ -145,6 +141,7 @@ void Server::deleteRequest()
 
 void Server::quarantine()
 {
+	// check if file exists
 	BinaryReader reader(ipc);
 	uint64_t threatIndex = reader.readUInt64();
 	std::u16string threatPath = threats->get(threatIndex);
@@ -187,33 +184,122 @@ void Server::scheduleScan()
 	uint32_t hours = reader.readUInt32();
 	uint32_t minutes = reader.readUInt32();
 
-	scheduledScanner.setScanPath(scanPath);
-	scheduledScanner.setScanTime(hours, minutes);
+	scheduleScanners.push_back(ScheduleScanner(base, threats, scanPath, hours, minutes));
 
-	scheduledScanner.start();
+	std::thread scheduleThread(&ScheduleScanner::start, std::ref(scheduleScanners[scheduleScanners.size() - 1]));
+	scheduleThread.detach();
 }
 
-void Server::pauseMonitors(const std::u16string& path)
+void Server::shutDown()
 {
+	saveMonitors();
+	saveScheduleScanners();
+	ExitProcess(0);
+}
+
+void Server::loadMonitors()
+{
+	std::u16string filePath = u"Monitors.lsd";
+	BinaryReader reader(filePath);
+	if (!reader.isOpen())
+		return;
+
+	std::u16string header = reader.readU16String();
+	if (header != u"Denisovich")
+	{
+		reader.close();
+		return;
+	}
+	uint64_t recordNumber = reader.readUInt64();
+
+	for (size_t i = 0; i < recordNumber; i++)
+	{
+		std::u16string scanPath = reader.readU16String();
+
+		monitors.push_back(Monitor(scanPath, base, threats));
+
+		std::thread monitorThread(&Monitor::start, std::ref(monitors[monitors.size() - 1]));
+		monitorThread.detach();
+	}
+
+	reader.close();
+
+}
+
+void Server::saveMonitors()
+{
+	std::u16string filePath = u"Monitors.lsd";
+	BinaryWriter writer(filePath);
+	writer.writeU16String(u"Denisovich");
+	writer.writeUInt64(monitors.size());
+
 	for (auto& el : monitors)
 	{
-		if (path.find(el.getPath()) != std::u16string::npos)
-			el.pause();
+		writer.writeU16String(el.getPath());
 	}
+
+	writer.close();
 }
 
-void Server::resumeMonitors(const std::u16string& path)
+void Server::loadScheduleScanners()
 {
-	for (auto& el : monitors)
+	std::u16string filePath = u"Scanners.lsd";
+	BinaryReader reader(filePath);
+	if (!reader.isOpen())
+		return;
+
+	std::u16string header = reader.readU16String();
+	if (header != u"Denisovich")
 	{
-		if (path.find(el.getPath()) != std::u16string::npos)
-			el.resume();
+		reader.close();
+		return;
 	}
+	uint64_t recordNumber = reader.readUInt64();
+
+	for (size_t i = 0; i < recordNumber; i++)
+	{
+		std::u16string scanPath = reader.readU16String();
+		uint32_t hours = reader.readUInt32();
+		uint32_t minutes = reader.readUInt32();
+
+		scheduleScanners.push_back(ScheduleScanner(base, threats, scanPath, hours, minutes));
+
+		std::thread monitorThread(&ScheduleScanner::start, std::ref(scheduleScanners[scheduleScanners.size() - 1]));
+		monitorThread.detach();
+	}
+
+	reader.close();
 }
 
-void Server::start()
+void Server::saveScheduleScanners()
 {
+	std::u16string filePath = u"Scanners.lsd";
+	BinaryWriter writer(filePath);
 
+	writer.writeU16String(u"Denisovich");
+	writer.writeUInt64(scheduleScanners.size());
+
+	for (auto& el : scheduleScanners)
+	{
+		writer.writeU16String(el.getPath());
+		writer.writeUInt32(el.getHours());
+		writer.writeUInt32(el.getMinutes());
+	}
+
+	writer.close();
+}
+
+void Server::startUp()
+{
+	base = std::shared_ptr<Base>(BaseLoader::load(u"Base.lsd"));
+	threats = std::make_shared<ThreatList>(u"Threats.lsd");
+	threats->load();
+
+	scanner = Scanner(base, threats);
+
+	loadMonitors();
+	loadScheduleScanners();
+	
 	std::thread ipcThread(&Server::startReading, this);
 	ipcThread.join();
 }

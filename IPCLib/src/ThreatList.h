@@ -21,9 +21,6 @@ public:
 	inline std::u16string get(size_t index) { return threats[index]; }
 	inline size_t size() { return threats.size(); }
 
-	// debug only
-	void log();
-
 private:
 	std::vector<std::u16string> threats;
 	std::u16string path;

@@ -22,12 +22,13 @@ private:
     void quarantineRequest(uint64_t index);
     void unQuarantineRequest(uint64_t index);
     void setupMonitor(const std::u16string& path);
+    void loadMonitors();
+    void loadScanners();
 
 signals:
     void reportOutput(const QString& value);
     void setProgressBar(int value);
     void removeItem(int index);
-    void reportButtonEnabled(bool value);
 
 private slots:
     void on_browseButton_clicked();

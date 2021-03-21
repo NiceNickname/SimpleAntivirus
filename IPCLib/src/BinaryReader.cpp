@@ -6,6 +6,7 @@ BinaryReader::BinaryReader(const std::u16string& path)
 	handle = CreateFile((wchar_t*)path.c_str(), 
 		GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL, NULL);
+	HRESULT error = GetLastError();
 }
 
 BinaryReader::BinaryReader(const std::shared_ptr<IPC>& ipc)
@@ -96,6 +97,7 @@ std::u16string BinaryReader::readU16String()
 	uint32_t size = readUInt32();
 	char16_t result[1024];
 	ReadFile(handle, result, size * sizeof(char16_t), &bytesRead, NULL);
+	HRESULT error = GetLastError();
 
 	result[size] = u'\0';
 	return std::move(std::u16string(result));

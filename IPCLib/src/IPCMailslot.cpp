@@ -5,8 +5,16 @@ IPCMailslot::IPCMailslot(const std::u16string& readPath, const std::u16string& w
 	this->readPath = readPath;
 	this->writePath = writePath;
 
+	SECURITY_DESCRIPTOR sd;
+	InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+	SetSecurityDescriptorDacl(&sd, true, NULL, false);
+
+	SECURITY_ATTRIBUTES sa;
+	sa.lpSecurityDescriptor = &sd;
+	sa.bInheritHandle = true;
+
 	readSlot = CreateMailslot((LPCWSTR)readPath.c_str(),
-		0, MAILSLOT_WAIT_FOREVER, (LPSECURITY_ATTRIBUTES)NULL);
+		0, MAILSLOT_WAIT_FOREVER, (LPSECURITY_ATTRIBUTES)&sa);
 }
 
 IPCMailslot::~IPCMailslot()
@@ -27,6 +35,7 @@ void IPCMailslot::connect()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		(HANDLE)NULL);
+
 
 	while (writeSlot == INVALID_HANDLE_VALUE)
 	{

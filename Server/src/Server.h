@@ -13,18 +13,21 @@ public:
 	Server();
 	~Server();
 
-	void start();
+	void startUp();
+	void shutDown();
 
 private:
 	void startReading();
-	void processRequest(bool& clientShutDown, bool& serverShutDown);
+	void processRequest();
 	void deleteRequest();
 	void quarantine();
 	void startScan();
 	void scheduleScan();
 
-	void pauseMonitors(const std::u16string& path);
-	void resumeMonitors(const std::u16string& path);
+	void loadMonitors();
+	void saveMonitors();
+	void loadScheduleScanners();
+	void saveScheduleScanners();
 private:
 	std::shared_ptr<Base> base;
 	std::shared_ptr<IPC> ipc;
@@ -33,7 +36,8 @@ private:
 	Scanner scanner;
 	
 	std::vector<Monitor> monitors;
-	HANDLE hReportAddress;
+	std::vector<ScheduleScanner> scheduleScanners;
 
-	ScheduleScanner scheduledScanner;
+	HANDLE hReportAddress;
+	bool clientShutdown = false;
 };

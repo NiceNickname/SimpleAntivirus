@@ -37,8 +37,7 @@ void ScheduleScanner::setScanPath(const std::u16string& path)
 
 void ScheduleScanner::start()
 {
-	std::thread scanThread(&ScheduleScanner::timeMonitoring, this);
-	scanThread.detach();
+	timeMonitoring();
 }
 
 void ScheduleScanner::timeMonitoring()
@@ -47,12 +46,20 @@ void ScheduleScanner::timeMonitoring()
 
 	GetLocalTime(&now);
 
-	while (now.wHour != hours || now.wMinute != minutes)
+	while (true)
 	{
-		Sleep(1000);
+		if (shouldStop)
+			return;
+
 		GetLocalTime(&now);
+		if (now.wHour == hours && now.wMinute == minutes)
+		{
+			scanner.startScan(scanPath);
+			Sleep(1000 * 60);
+		}
+
+		Sleep(1000);
 	}
 
-	scanner.startScan(scanPath);
 }
 
