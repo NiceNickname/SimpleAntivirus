@@ -7,5 +7,6 @@ TestDirectory/
 *.user
 *.filters
 *.exe
+*.zip
 *.mp4
 *.diagsession

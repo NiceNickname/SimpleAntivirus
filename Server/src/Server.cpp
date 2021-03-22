@@ -133,6 +133,12 @@ void Server::deleteRequest()
 		threats->save();
 		success = true;
 	}
+	else if (GetLastError() == 2)
+	{
+		threats->remove(threatIndex);
+		threats->save();
+		success = true;
+	}
 
 	ReleaseMutex(mutex);
 

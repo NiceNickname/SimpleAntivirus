@@ -54,26 +54,6 @@ void ThreatList::save()
 {
 	WaitForSingleObject(mutex, INFINITE);
 
-	BinaryReader reader(path);
-
-	if (reader.isOpen())
-	{
-		std::u16string header = reader.readU16String();
-
-		if (header == u"Denisovich")
-		{
-			uint64_t recordCount = reader.readUInt64();
-
-			for (size_t i = 0; i < recordCount; i++)
-			{
-				add(reader.readU16String());
-			}
-		}
-		reader.close();
-	}
-
-
-
 	BinaryWriter writer(path);
 
 	writer.writeU16String(u"Denisovich");
