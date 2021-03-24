@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1661</width>
-    <height>934</height>
+    <width>1397</width>
+    <height>681</height>
    </rect>
   </property>
   <property name="font">
@@ -26,190 +26,158 @@
        <number>0</number>
       </property>
       <widget class="QWidget" name="page">
-       <widget class="QLabel" name="pathLabel">
-        <property name="geometry">
-         <rect>
-          <x>11</x>
-          <y>11</y>
-          <width>64</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>File path</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="pathLineEdit">
-        <property name="geometry">
-         <rect>
-          <x>11</x>
-          <y>39</y>
-          <width>1001</width>
-          <height>27</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="browseButton">
-        <property name="geometry">
-         <rect>
-          <x>1020</x>
-          <y>40</y>
-          <width>111</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="scanButton">
-        <property name="geometry">
-         <rect>
-          <x>1310</x>
-          <y>40</y>
-          <width>161</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Scan</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="stopScanButton">
-        <property name="geometry">
-         <rect>
-          <x>1480</x>
-          <y>40</y>
-          <width>141</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Stop Scan</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="monitorPageButton">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>240</y>
-          <width>271</width>
-          <height>141</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Set Monitoring</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="reportButton">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>400</y>
-          <width>271</width>
-          <height>141</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Report</string>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="reportTextEdit">
-        <property name="geometry">
-         <rect>
-          <x>301</x>
-          <y>74</y>
-          <width>1321</width>
-          <height>711</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-       </widget>
-       <widget class="QProgressBar" name="scanProgressBar">
-        <property name="geometry">
-         <rect>
-          <x>11</x>
-          <y>816</y>
-          <width>1491</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="shutDownButton">
-        <property name="geometry">
-         <rect>
-          <x>1507</x>
-          <y>814</y>
-          <width>121</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 0, 0);
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <widget class="QLabel" name="pathLabel">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>File path</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QLineEdit" name="pathLineEdit">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="browseButton">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QPushButton" name="scanButton">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Scan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QPushButton" name="stopScanButton">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Stop Scan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="monitorPageButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Set Monitoring</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="reportButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Report</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="schedulePageButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Schedule Scan</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="1" colspan="4">
+         <widget class="QTextEdit" name="reportTextEdit">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="4">
+         <widget class="QProgressBar" name="scanProgressBar">
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QPushButton" name="shutDownButton">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 0, 0);
 color: rgb(255, 255, 255);</string>
-        </property>
-        <property name="text">
-         <string>Shutdown</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="schedulePageButton">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>271</width>
-          <height>141</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Schedule Scan</string>
-        </property>
-       </widget>
+          </property>
+          <property name="text">
+           <string>Shutdown</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="page_2">
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QPushButton" name="backButton">
-          <property name="text">
-           <string>back</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="backButton">
+            <property name="text">
+             <string>back</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Threats</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="3">
+        <item row="1" column="0" colspan="2">
          <widget class="QListWidget" name="threatList">
           <property name="font">
            <font>
@@ -218,211 +186,182 @@ color: rgb(255, 255, 255);</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="deleteButton">
-          <property name="text">
-           <string>delete</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QPushButton" name="quarantineButton">
-          <property name="text">
-           <string>quarantine</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QPushButton" name="unQuarantineButton">
-          <property name="text">
-           <string>Remove from quarantine</string>
-          </property>
-         </widget>
+        <item row="2" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="deleteButton">
+            <property name="text">
+             <string>delete</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="quarantineButton">
+            <property name="text">
+             <string>quarantine</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="unQuarantineButton">
+            <property name="text">
+             <string>Remove from quarantine</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="page_3">
-       <widget class="QLineEdit" name="monitorPathEdit">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>60</y>
-          <width>691</width>
-          <height>27</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="monitorButton">
-        <property name="geometry">
-         <rect>
-          <x>1240</x>
-          <y>60</y>
-          <width>171</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Start Monitoring</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="monitorBackButton">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>20</y>
-          <width>201</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>back</string>
-        </property>
-       </widget>
-       <widget class="QTableWidget" name="monitorTable">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>101</y>
-          <width>1571</width>
-          <height>721</height>
-         </rect>
-        </property>
-        <column>
-         <property name="text">
-          <string>Path</string>
-         </property>
-        </column>
-       </widget>
-       <widget class="QPushButton" name="monitorBrowseButton">
-        <property name="geometry">
-         <rect>
-          <x>740</x>
-          <y>60</y>
-          <width>171</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="stopMonitorButton">
-        <property name="geometry">
-         <rect>
-          <x>1430</x>
-          <y>60</y>
-          <width>171</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Stop Monitoring</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="monitorBackButton">
+            <property name="text">
+             <string>back</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLineEdit" name="monitorPathEdit">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="monitorBrowseButton">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QPushButton" name="monitorButton">
+            <property name="text">
+             <string>Start Monitoring</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="stopMonitorButton">
+            <property name="text">
+             <string>Stop Monitoring</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QTableWidget" name="monitorTable">
+          <column>
+           <property name="text">
+            <string>Path</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="page_4">
-       <widget class="QLineEdit" name="schedulePathEdit">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>70</y>
-          <width>571</width>
-          <height>27</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="scheduleScanButton">
-        <property name="geometry">
-         <rect>
-          <x>1080</x>
-          <y>70</y>
-          <width>171</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Schedule Scan</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="scheduleBackButton">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>20</y>
-          <width>534</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>back</string>
-        </property>
-       </widget>
-       <widget class="QTableWidget" name="scheduleScanTable">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>110</y>
-          <width>1551</width>
-          <height>701</height>
-         </rect>
-        </property>
-        <column>
-         <property name="text">
-          <string>Path</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Time</string>
-         </property>
-        </column>
-       </widget>
-       <widget class="QPushButton" name="cancelScheduleScanButton">
-        <property name="geometry">
-         <rect>
-          <x>1280</x>
-          <y>70</y>
-          <width>171</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Cancel Schedule Scan</string>
-        </property>
-       </widget>
-       <widget class="QTimeEdit" name="scheduleTimeEdit">
-        <property name="geometry">
-         <rect>
-          <x>930</x>
-          <y>70</y>
-          <width>121</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="scheduleBrowseButton">
-        <property name="geometry">
-         <rect>
-          <x>630</x>
-          <y>70</y>
-          <width>171</width>
-          <height>28</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="3" column="0">
+         <widget class="QPushButton" name="scheduleScanButton">
+          <property name="text">
+           <string>Schedule Scan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="cancelScheduleScanButton">
+          <property name="text">
+           <string>Cancel Schedule Scan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QTableWidget" name="scheduleScanTable">
+          <column>
+           <property name="text">
+            <string>Path</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Time</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLineEdit" name="schedulePathEdit">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="scheduleBrowseButton">
+            <property name="text">
+             <string>Browse</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTimeEdit" name="scheduleTimeEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="scheduleBackButton">
+            <property name="text">
+             <string>back</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -433,8 +372,8 @@ color: rgb(255, 255, 255);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1661</width>
-     <height>26</height>
+     <width>1397</width>
+     <height>23</height>
     </rect>
    </property>
   </widget>
