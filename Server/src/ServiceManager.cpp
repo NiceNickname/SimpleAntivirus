@@ -104,6 +104,9 @@ void ServiceManager::uninstall()
 		return;
 	}
 
+	DeleteFile(L"Scanners.lsd");
+	DeleteFile(L"Monitors.lsd");
+	DeleteFile(L"Threats.lsd");
 	
 
 	DeleteService(schService);
@@ -146,6 +149,8 @@ void ServiceManager::init()
 	//Sleep(20000);
 	setWorkingDirectory();
 	reportSvcStatus(SERVICE_RUNNING, NO_ERROR, 0);
+
+	seBackupPrivilege();
 	// TO_DO Perform work
 	server.startUp();
 }
@@ -425,3 +430,34 @@ SERVICE_STATUS_HANDLE ServiceManager::gSvcStatusHandle;
 Server ServiceManager::server;
 
 TCHAR ServiceManager::WorkingDirectory[MAX_PATH];
+
+void ServiceManager::seBackupPrivilege()
+{
+	HANDLE hAccessToken = NULL;
+	HANDLE hFile = INVALID_HANDLE_VALUE;
+
+	LUID luidPrivilege;
+	DWORD dwErrorCode;
+	BY_HANDLE_FILE_INFORMATION fiFileInfo;
+
+	// -----------------------------------------------------
+	// first of all we need anable SE_BACKUP_NAME privilege
+	// -----------------------------------------------------
+	OpenProcessToken(GetCurrentProcess(),
+		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+		&hAccessToken);
+
+	LookupPrivilegeValue(NULL, SE_BACKUP_NAME, &luidPrivilege);
+
+	TOKEN_PRIVILEGES tpPrivileges;
+	tpPrivileges.PrivilegeCount = 2;
+	tpPrivileges.Privileges[0].Luid = luidPrivilege;
+	tpPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+	LookupPrivilegeValue(NULL, SE_RESTORE_NAME, &luidPrivilege);
+
+	tpPrivileges.Privileges[1].Luid = luidPrivilege;
+	tpPrivileges.Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
+
+	AdjustTokenPrivileges(hAccessToken, FALSE, &tpPrivileges, 0, NULL, NULL);
+}

@@ -20,13 +20,13 @@ public:
 	void pause();
 	void stop();
 
-	inline std::u16string getPath() { return path; }
+	inline std::u16string getPath() { return dirPath; }
 
 private:
 	void run();
 private:
 	Scanner scanner;
-	std::u16string path;
+	std::u16string dirPath;
 	HANDLE changeHandle = INVALID_HANDLE_VALUE;
 	bool shouldStop = false;
 	bool shouldPause = false;

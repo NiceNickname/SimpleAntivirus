@@ -26,4 +26,5 @@ private:
 	static SERVICE_STATUS_HANDLE gSvcStatusHandle;
 	static Server server;
 	static TCHAR WorkingDirectory[MAX_PATH];
+	static void seBackupPrivilege();
 };
